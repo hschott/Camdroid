@@ -7,9 +7,11 @@ import org.camdroid.CameraPreviewView.OnCameraPreviewListener;
 import org.camdroid.CameraPreviewView.OnCameraPreviewListener.AutoFocusManagerAware;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -52,11 +54,14 @@ public class ProcessFramesView extends ViewGroup implements
 				Mat gray = this.data.submat(0, mPreviewSize.height, 0,
 						mPreviewSize.width).clone();
 
+				Core.normalize(gray, gray, 15, 255, Core.NORM_MINMAX);
+
 				Imgproc.adaptiveThreshold(gray, gray, 255,
 						Imgproc.THRESH_BINARY_INV,
 						Imgproc.ADAPTIVE_THRESH_MEAN_C, 5, 15);
 
 				Imgproc.cvtColor(gray, rgba, Imgproc.COLOR_GRAY2BGR, 0);
+				
 				drawToSurface(rgba);
 			} catch (Exception e) {
 			}
