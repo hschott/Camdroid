@@ -31,14 +31,17 @@ public abstract class AmbientLightEventListener extends SensorManagerWrapper {
 	}
 
 	public AmbientLightEventListener(Context context, int rate) {
-		this.mSensorManager = (SensorManager) context
-				.getSystemService(Context.SENSOR_SERVICE);
-		this.mRate = rate;
-		this.mSensor = this.mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-		if (this.mSensor != null) {
-			// Create listener only if sensors do exist
-			this.mSensorEventListener = new SensorEventListenerImpl();
-		}
+		super(context, rate);
+	}
+
+	@Override
+	public SensorEventListener getSensorEventListener() {
+		return new SensorEventListenerImpl();
+	}
+
+	@Override
+	public Sensor getSensor() {
+		return getSensorManager().getDefaultSensor(Sensor.TYPE_LIGHT);
 	}
 
 	abstract public void onAmbientLightChanged(float lux);

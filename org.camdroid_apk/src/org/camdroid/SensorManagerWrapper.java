@@ -1,20 +1,37 @@
 package org.camdroid;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 public abstract class SensorManagerWrapper {
 
-	protected SensorManager mSensorManager;
-	protected boolean mEnabled = false;
-	protected int mRate;
-	protected Sensor mSensor;
-	protected SensorEventListener mSensorEventListener;
+	private SensorManager mSensorManager;
+	private boolean mEnabled = false;
+	private int mRate;
+	private Sensor mSensor;
+	private SensorEventListener mSensorEventListener;
 
-	public SensorManagerWrapper() {
+	public SensorManagerWrapper(Context context, int rate) {
 		super();
+		mRate = rate;
+		this.mSensorManager = (SensorManager) context
+				.getSystemService(Context.SENSOR_SERVICE);
+		this.mSensor = getSensor();
+		if (this.mSensor != null) {
+			// Create listener only if sensors do exist
+			this.mSensorEventListener = getSensorEventListener();
+		}
 	}
+
+	public SensorManager getSensorManager() {
+		return mSensorManager;
+	}
+	
+	public abstract Sensor getSensor();
+
+	public abstract SensorEventListener getSensorEventListener();
 
 	/**
 	 * Disables the SensorEventListener.

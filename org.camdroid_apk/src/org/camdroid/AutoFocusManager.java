@@ -44,8 +44,8 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 
 	private class FocusAmbientLightEventListener extends
 			AmbientLightEventListener {
-		private static final float TOO_DARK_LUX = 10.0f;
-		private static final float BRIGHT_ENOUGH_LUX = 100.0f;
+		private static final float TOO_DARK_LUX = 25.0f;
+		private static final float BRIGHT_ENOUGH_LUX = 150.0f;
 
 		public FocusAmbientLightEventListener(Context context) {
 			super(context);
@@ -71,7 +71,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 	private static final long AUTO_FOCUS_INTERVAL_MS = 3000L;
 	private long autoFocusInterval = AUTO_FOCUS_INTERVAL_MS;
 
-	private final boolean continuous_auto_focus;
+	private final boolean auto_focus_callable;
 	private volatile boolean takePicture;
 	private volatile boolean focused;
 	private volatile boolean active;
@@ -99,19 +99,19 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 				context, SensorManager.SENSOR_DELAY_GAME);
 
 		String focusMode = this.camera.getParameters().getFocusMode();
-		this.continuous_auto_focus = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
-				.equals(focusMode);
+		this.auto_focus_callable = Camera.Parameters.FOCUS_MODE_AUTO
+				.equals(focusMode)
+				|| Camera.Parameters.FOCUS_MODE_MACRO.equals(focusMode);
 
 		List<Integer> resId = new ArrayList<Integer>();
-		if (!continuous_auto_focus) {
+		if (auto_focus_callable) {
 			resId.add(R.raw.beep);
 		}
 		if (canDisableSystemShutterSound) {
 			resId.add(R.raw.shutter);
 		}
 
-		this.soundManager = new SoundManager(context,
-				Utils.toIntArray(resId));
+		this.soundManager = new SoundManager(context, Utils.toIntArray(resId));
 
 		if (canDisableSystemShutterSound) {
 			this.shutterCallback = new ShutterCallback() {
@@ -125,7 +125,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 	}
 
 	public synchronized void focus() {
-		if (this.active && !this.continuous_auto_focus) {
+		if (this.active && this.auto_focus_callable) {
 			try {
 				this.camera.autoFocus(this);
 				this.focused = false;
@@ -136,7 +136,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 	}
 
 	public synchronized boolean isFocused() {
-		return this.focused || this.continuous_auto_focus;
+		return this.focused || !this.auto_focus_callable;
 	}
 
 	@Override
@@ -145,7 +145,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 
 		if (this.focused) {
 			this.soundManager.play(R.raw.beep);
-			
+
 			if (this.focusAccelerationEventListener.isEnabled()) {
 				this.shouldReFocus = false;
 			} else {
@@ -168,15 +168,15 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 		}
 	}
 
-	synchronized void pause() {
+	public synchronized void pause() {
 		this.active = false;
 		this.focusAccelerationEventListener.disable();
 		this.focusAmbientLightEventListener.disable();
 	}
 
-	synchronized void resume() {
+	public synchronized void resume() {
 		this.active = true;
-		if (!this.continuous_auto_focus) {
+		if (this.auto_focus_callable) {
 			this.focusAccelerationEventListener.enable();
 			if (this.focusAccelerationEventListener.isEnabled()) {
 				this.autoFocusInterval = 750;
@@ -186,7 +186,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 
 		this.executor.execute(this);
 
-		Log.d(TAG, "continuous auto focus: " + this.continuous_auto_focus);
+		Log.d(TAG, "auto focus call not permitted: " + this.auto_focus_callable);
 		Log.d(TAG, "acceleration listener enabled: "
 				+ this.focusAccelerationEventListener.isEnabled());
 		Log.d(TAG, "ambientlight listener enabled: "
@@ -195,7 +195,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 
 	@Override
 	public synchronized void run() {
-		if (this.active && !this.continuous_auto_focus) {
+		if (this.active && this.auto_focus_callable) {
 			if (this.shouldReFocus) {
 				try {
 					this.camera.autoFocus(this);
@@ -212,7 +212,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 		}
 	}
 
-	synchronized void stop() {
+	public synchronized void stop() {
 		this.active = false;
 		this.takePicture = false;
 		this.focused = false;
@@ -225,7 +225,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 		this.focusAccelerationEventListener.disable();
 		this.focusAmbientLightEventListener.disable();
 
-		if (!this.continuous_auto_focus) {
+		if (this.auto_focus_callable) {
 			try {
 				this.camera.cancelAutoFocus();
 			} catch (RuntimeException re) {
@@ -235,7 +235,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 
 	}
 
-	synchronized void takePicture(PictureCallback callback) {
+	public synchronized void takePicture(PictureCallback callback) {
 		if (this.isFocused()) {
 			try {
 				this.camera.setPreviewCallback(null);

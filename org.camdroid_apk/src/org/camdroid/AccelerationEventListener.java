@@ -5,7 +5,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
 
 public abstract class AccelerationEventListener extends SensorManagerWrapper {
 
@@ -36,59 +35,24 @@ public abstract class AccelerationEventListener extends SensorManagerWrapper {
 	}
 
 	public static final int ACCELERATION_UNKNOWN = -1;
-	private static final String TAG = "AccelerationEventListener";
 
 	public AccelerationEventListener(Context context) {
 		this(context, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	public AccelerationEventListener(Context context, int rate) {
-		this.mSensorManager = (SensorManager) context
-				.getSystemService(Context.SENSOR_SERVICE);
-		this.mRate = rate;
-		this.mSensor = this.mSensorManager
-				.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-		if (this.mSensor != null) {
-			// Create listener only if sensors do exist
-			this.mSensorEventListener = new SensorEventListenerImpl();
-		}
-	}
-
-	/**
-	 * Disables the AccelerationEventListener.
-	 */
-	@Override
-	public void disable() {
-		if (this.mSensor == null) {
-			Log.w(TAG, "Cannot detect sensors. Invalid disable");
-			return;
-		}
-		if (this.mEnabled == true) {
-			this.mSensorManager.unregisterListener(this.mSensorEventListener);
-			this.mEnabled = false;
-		}
-	}
-
-	/**
-	 * Enables the AccelerationEventListener so it will monitor the sensor and
-	 * call {@link #onOrientationChanged} when the device orientation changes.
-	 */
-	@Override
-	public void enable() {
-		if (this.mSensor == null) {
-			Log.w(TAG, "Cannot detect sensors. Not enabled");
-			return;
-		}
-		if (this.mEnabled == false) {
-			this.mSensorManager.registerListener(this.mSensorEventListener,
-					this.mSensor, this.mRate);
-			this.mEnabled = true;
-		}
+		super(context, rate);
 	}
 
 	@Override
-	public boolean isEnabled() {
-		return this.mEnabled;
+	public SensorEventListener getSensorEventListener() {
+		return new SensorEventListenerImpl();
+	}
+
+	@Override
+	public Sensor getSensor() {
+		return getSensorManager().getDefaultSensor(
+				Sensor.TYPE_LINEAR_ACCELERATION);
 	}
 
 	abstract public void onAccelerationChanged(double orientation);

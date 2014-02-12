@@ -30,6 +30,9 @@ public class CameraInterface {
 		}
 		SUPPORTED_FOCUS_MODES.add(Camera.Parameters.FOCUS_MODE_MACRO);
 		SUPPORTED_FOCUS_MODES.add(Camera.Parameters.FOCUS_MODE_AUTO);
+		SUPPORTED_FOCUS_MODES.add(Camera.Parameters.FOCUS_MODE_EDOF);
+		SUPPORTED_FOCUS_MODES.add(Camera.Parameters.FOCUS_MODE_INFINITY);
+		SUPPORTED_FOCUS_MODES.add(Camera.Parameters.FOCUS_MODE_FIXED);
 	}
 
 	protected static Camera.Size calculateCameraPictureSize(

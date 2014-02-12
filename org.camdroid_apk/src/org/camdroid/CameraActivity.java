@@ -18,11 +18,8 @@ import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -31,7 +28,7 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 	private CameraPreviewView mPreview;
 	private ProcessFramesView mProcessorView;
 
-	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SS",
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SS",
 			Locale.US);
 
 	private BroadcastReceiver screenOffReceiver = new BroadcastReceiver() {
@@ -45,7 +42,7 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 		}
 	};
 
-	OnClickListener onClickListener = new OnClickListener() {
+	private OnClickListener onClickListener = new OnClickListener() {
 
 		@Override
 		public void onClick(View v) {

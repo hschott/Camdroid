@@ -11,7 +11,6 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.photo.Photo;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -131,7 +130,7 @@ public class ProcessFramesView extends ViewGroup implements
 
 		if (this.mAutoFocusManager != null
 				&& !this.mAutoFocusManager.isFocused())
-			// return;
+			return;
 
 			if (this.mProcessor.dataLock)
 				return;

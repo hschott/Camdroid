@@ -154,7 +154,7 @@ public class CameraManager {
 		}
 	}
 
-	protected static void initializeCamera(Camera camera) {
+	static void initializeCamera(Camera camera) {
 
 		Camera.Parameters params = camera.getParameters();
 

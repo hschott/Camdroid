@@ -44,7 +44,7 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
 		public void onCameraPreviewStopped();
 	};
 
-	static final String TAG = CameraPreviewView.class.getSimpleName();
+	private static final String TAG = CameraPreviewView.class.getSimpleName();
 
 	private SurfaceView mSurfaceView;
 	private Camera mCamera;
@@ -57,7 +57,7 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
 
 	private boolean previewRunning = false;
 
-	OnClickListener onClickListener = new OnClickListener() {
+	private OnClickListener onClickListener = new OnClickListener() {
 
 		@Override
 		public void onClick(View v) {
@@ -108,7 +108,6 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
 		CameraManager.initializeCamera(this.mCamera);
 		Log.d(TAG, "camera created");
 
-		
 		CameraInfo cameraInfo = new CameraInfo();
 		Camera.getCameraInfo(cameraIndex, cameraInfo);
 
