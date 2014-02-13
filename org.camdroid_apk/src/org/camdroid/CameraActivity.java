@@ -6,11 +6,9 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.camdriod.R;
-import org.camdroid.CameraPreviewView.OnCameraPreviewListener;
+import org.camdroid.processor.FrameProcessors;
 import org.camdroid.util.StorageUtils;
-import org.camdroid.util.SystemUiHider;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,18 +16,20 @@ import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class CameraActivity extends Activity implements OnCameraPreviewListener {
-	private SystemUiHider systemUiHider;
+public class CameraActivity extends ActionBarActivity {
 	private CameraPreviewView mPreview;
 	private ProcessFramesView mProcessorView;
 
-	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SS",
-			Locale.US);
+	private SimpleDateFormat sdf = new SimpleDateFormat(
+			"yyyy-MM-dd_HH-mm-ss-SS", Locale.US);
 
 	private BroadcastReceiver screenOffReceiver = new BroadcastReceiver() {
 
@@ -43,7 +43,6 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 	};
 
 	private OnClickListener onClickListener = new OnClickListener() {
-
 		@Override
 		public void onClick(View v) {
 			if (v.getId() == R.id.camera) {
@@ -52,18 +51,17 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 		}
 	};
 
-	@Override
-	public void onCameraPreviewFrame(byte[] data, int previewFormat) {
-	}
+	public boolean onOptionsItemSelected(MenuItem item) {
+		setFrameProcessor(item.getItemId());
+		return true;
+	};
 
-	@Override
-	public void onCameraPreviewStarted(Camera camera) {
-		this.mProcessorView.setEnabled(true);
-	}
-
-	@Override
-	public void onCameraPreviewStopped() {
-	}
+	public boolean onCreateOptionsMenu(android.view.Menu menu) {
+		for (FrameProcessors f : FrameProcessors.values()) {
+			menu.add(Menu.NONE, f.ordinal(), Menu.NONE, f.name());
+		}
+		return true;
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,14 +69,7 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 
 		this.setResult(RESULT_CANCELED);
 
-		this.systemUiHider = SystemUiHider.getInstance(this,
-				SystemUiHider.FLAG_LAYOUT_IN_SCREEN_OLDER_DEVICES
-						| SystemUiHider.FLAG_FULLSCREEN);
-		this.systemUiHider.setHideDelayMillis(3000);
-
 		this.setContentView(R.layout.camera);
-
-		this.systemUiHider.hide();
 
 		this.mPreview = (CameraPreviewView) this
 				.findViewById(R.id.camera_surface_view);
@@ -97,6 +88,13 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 		f.addAction(Intent.ACTION_SCREEN_OFF);
 		this.registerReceiver(this.screenOffReceiver, f);
 
+	}
+
+	protected void setFrameProcessor(int ordinal) {
+		FrameProcessors t = FrameProcessors.values()[ordinal];
+		mPreview.stopPreview();
+		mProcessorView.setFrameProcessor(t.newFrameProcessor(mProcessorView));
+		mPreview.startPreview();
 	}
 
 	@Override
@@ -123,8 +121,9 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 		super.onStart();
 		this.mPreview.createCamera();
 
-		this.mPreview.addCameraFrameListener(this);
 		this.mPreview.addCameraFrameListener(this.mProcessorView);
+		
+		Toast.makeText(getApplicationContext(), R.string.select, Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -132,7 +131,6 @@ public class CameraActivity extends Activity implements OnCameraPreviewListener 
 		super.onStop();
 		this.mPreview.releaseCamera();
 
-		this.mPreview.removeCameraFrameListener(this);
 		this.mPreview.removeCameraFrameListener(this.mProcessorView);
 	}
 

@@ -3,14 +3,9 @@ package org.camdroid;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.camdroid.CameraPreviewView.OnCameraPreviewListener;
-import org.camdroid.CameraPreviewView.OnCameraPreviewListener.AutoFocusManagerAware;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
+import org.camdroid.OnCameraPreviewListener.AutoFocusManagerAware;
+import org.camdroid.OnCameraPreviewListener.FrameDrawer;
+import org.camdroid.processor.FrameProcessor;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,48 +21,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class ProcessFramesView extends ViewGroup implements
-		SurfaceHolder.Callback, OnCameraPreviewListener, AutoFocusManagerAware {
-
-	static {
-		OpenCVLoader.init();
-	}
-
-	private class FrameProcessor implements Runnable {
-		volatile boolean dataLock = false;
-
-		Mat data;
-		Mat rgba;
-
-		public FrameProcessor(Context context) {
-			rgba = new Mat();
-		}
-
-		@Override
-		public void run() {
-			if (this.dataLock)
-				return;
-
-			this.dataLock = true;
-
-			try {
-				Mat gray = this.data.submat(0, mPreviewSize.height, 0,
-						mPreviewSize.width).clone();
-
-				Core.normalize(gray, gray, 15, 255, Core.NORM_MINMAX);
-
-				Imgproc.adaptiveThreshold(gray, gray, 255,
-						Imgproc.THRESH_BINARY_INV,
-						Imgproc.ADAPTIVE_THRESH_MEAN_C, 5, 15);
-
-				Imgproc.cvtColor(gray, rgba, Imgproc.COLOR_GRAY2BGR, 0);
-				
-				drawToSurface(rgba);
-			} catch (Exception e) {
-			}
-
-			this.dataLock = false;
-		}
-	}
+		SurfaceHolder.Callback, OnCameraPreviewListener, AutoFocusManagerAware,
+		FrameDrawer {
 
 	private static final String TAG = ProcessFramesView.class.getSimpleName();
 
@@ -76,7 +31,6 @@ public class ProcessFramesView extends ViewGroup implements
 	private ExecutorService mExecutor;
 	private FrameProcessor mProcessor;
 	private Camera.Size mPreviewSize;
-	private Bitmap mCacheBitmap;
 
 	private float mScale;
 
@@ -103,10 +57,6 @@ public class ProcessFramesView extends ViewGroup implements
 	private void initView(Context context) {
 		Log.d(TAG, "initView()");
 
-		if (!this.isInEditMode())
-			this.mProcessor = new FrameProcessor(this.getContext()
-					.getApplicationContext());
-
 		this.setBackgroundColor(this.getResources().getColor(
 				android.R.color.black));
 
@@ -118,6 +68,24 @@ public class ProcessFramesView extends ViewGroup implements
 		SurfaceHolder holder = view.getHolder();
 		holder.setType(SurfaceHolder.SURFACE_TYPE_NORMAL);
 		holder.addCallback(this);
+	}
+
+	public void setFrameProcessor(FrameProcessor processor) {
+		if (processor == null) {
+			FrameProcessor tmp = mProcessor;
+			this.mProcessor = null;
+			if (tmp != null) {
+				tmp.release();
+			}
+		} else if (mProcessor != null
+				&& !processor.getClass()
+						.isAssignableFrom(mProcessor.getClass())) {
+			FrameProcessor tmp = mProcessor;
+			this.mProcessor = processor;
+			tmp.release();
+		} else {
+			this.mProcessor = processor;
+		}
 	}
 
 	@Override
@@ -132,33 +100,29 @@ public class ProcessFramesView extends ViewGroup implements
 				&& !this.mAutoFocusManager.isFocused())
 			return;
 
-			if (this.mProcessor.dataLock)
-				return;
+		if (mProcessor == null)
+			return;
 
-		this.mProcessor.dataLock = true;
-		this.mProcessor.data.put(0, 0, data);
-		this.mExecutor.execute(this.mProcessor);
-		this.mProcessor.dataLock = false;
+		if (this.mProcessor.put(data)) {
+			this.mExecutor.execute(this.mProcessor);
+		}
 	}
 
 	@Override
 	public void onCameraPreviewStarted(Camera camera) {
-		mPreviewSize = camera.getParameters().getPreviewSize();
+		this.mPreviewSize = camera.getParameters().getPreviewSize();
 
-		this.mProcessor.data = new Mat(this.mPreviewSize.height
-				+ (this.mPreviewSize.height / 2), this.mPreviewSize.width,
-				CvType.CV_8UC1);
+		if (mProcessor != null)
+			mProcessor.allocate(mPreviewSize.width, mPreviewSize.height);
 
-		mCacheBitmap = Bitmap.createBitmap(mPreviewSize.width,
-				mPreviewSize.height, Bitmap.Config.ARGB_8888);
-
-		mScale = Math.min(((float) getMeasuredHeight()) / mPreviewSize.height,
-				((float) getMeasuredWidth()) / mPreviewSize.width);
+		this.mScale = Math.min(((float) getMeasuredHeight())
+				/ mPreviewSize.height, ((float) getMeasuredWidth())
+				/ mPreviewSize.width);
 
 		this.mExecutor = Executors.newFixedThreadPool(1);
 	}
 
-	private void drawToSurface(Mat rgba) {
+	public void drawBitmap(Bitmap bitmap) {
 		if (mHolder == null) {
 			return;
 		}
@@ -168,44 +132,31 @@ public class ProcessFramesView extends ViewGroup implements
 			synchronized (mHolder) {
 				canvas = mHolder.lockCanvas(null);
 
-				Utils.matToBitmap(rgba, mCacheBitmap);
+				int bmpWidth = bitmap.getWidth();
+				int bmpHeight = bitmap.getHeight();
+
+				int canvasWidth = canvas.getWidth();
+				int canvasHeight = canvas.getHeight();
 
 				if (mScale != 0) {
 					canvas.drawBitmap(
-							mCacheBitmap,
-							new Rect(0, 0, mCacheBitmap.getWidth(),
-									mCacheBitmap.getHeight()),
+							bitmap,
+							new Rect(0, 0, bmpWidth, bmpHeight),
 							new Rect(
-									(int) ((canvas.getWidth() - mScale
-											* mCacheBitmap.getWidth()) / 2),
-									(int) ((canvas.getHeight() - mScale
-											* mCacheBitmap.getHeight()) / 2),
-									(int) ((canvas.getWidth() - mScale
-											* mCacheBitmap.getWidth()) / 2 + mScale
-											* mCacheBitmap.getWidth()),
-									(int) ((canvas.getHeight() - mScale
-											* mCacheBitmap.getHeight()) / 2 + mScale
-											* mCacheBitmap.getHeight())), null);
+									(int) ((canvasWidth - mScale * bmpWidth) / 2),
+									(int) ((canvasHeight - mScale * bmpHeight) / 2),
+									(int) ((canvasWidth - mScale * bmpWidth) / 2 + mScale
+											* bmpWidth),
+									(int) ((canvasHeight - mScale * bmpHeight) / 2 + mScale
+											* bmpHeight)), null);
 				} else {
-					canvas.drawBitmap(
-							mCacheBitmap,
-							new Rect(0, 0, mCacheBitmap.getWidth(),
-									mCacheBitmap.getHeight()),
-							new Rect((canvas.getWidth() - mCacheBitmap
-									.getWidth()) / 2,
-									(canvas.getHeight() - mCacheBitmap
-											.getHeight()) / 2, (canvas
-											.getWidth() - mCacheBitmap
-											.getWidth())
-											/ 2 + mCacheBitmap.getWidth(),
-									(canvas.getHeight() - mCacheBitmap
-											.getHeight())
-											/ 2
-											+ mCacheBitmap.getHeight()), null);
+					canvas.drawBitmap(bitmap, new Rect(0, 0, bmpWidth,
+							bmpHeight), new Rect((canvasWidth - bmpWidth) / 2,
+							(canvasHeight - bmpHeight) / 2,
+							(canvasWidth - bmpWidth) / 2 + bmpWidth,
+							(canvasHeight - bmpHeight) / 2 + bmpHeight), null);
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 			if (canvas != null) {
 				mHolder.unlockCanvasAndPost(canvas);
@@ -216,8 +167,9 @@ public class ProcessFramesView extends ViewGroup implements
 	@Override
 	public void onCameraPreviewStopped() {
 		this.mExecutor.shutdownNow();
-		this.mProcessor.data.release();
-		this.mCacheBitmap.recycle();
+		if (mProcessor != null) {
+			this.mProcessor.release();
+		}
 	}
 
 	@Override
@@ -280,5 +232,4 @@ public class ProcessFramesView extends ViewGroup implements
 			}
 		}
 	}
-
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.camdroid.CameraPreviewView.OnCameraPreviewListener.AutoFocusManagerAware;
+import org.camdroid.OnCameraPreviewListener.AutoFocusManagerAware;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -29,20 +29,6 @@ import android.view.ViewGroup;
  */
 public class CameraPreviewView extends ViewGroup implements PreviewCallback,
 		SurfaceHolder.Callback {
-
-	public interface OnCameraPreviewListener {
-		public interface AutoFocusManagerAware {
-			public AutoFocusManager getAutoFocusManager();
-
-			public void setAutoFocusManager(AutoFocusManager autoFocusManager);
-		}
-
-		public void onCameraPreviewFrame(byte[] data, int previewFormat);
-
-		public void onCameraPreviewStarted(Camera camera);
-
-		public void onCameraPreviewStopped();
-	};
 
 	private static final String TAG = CameraPreviewView.class.getSimpleName();
 

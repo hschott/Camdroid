@@ -28,7 +28,7 @@ public abstract class SensorManagerWrapper {
 	public SensorManager getSensorManager() {
 		return mSensorManager;
 	}
-	
+
 	public abstract Sensor getSensor();
 
 	public abstract SensorEventListener getSensorEventListener();

@@ -4,5 +4,6 @@
     <string name="app_name">Camdroid</string>
     <string name="button_shutter">Take Picture</string>
     <string name="picture_saved">Saved in Camdroid Album</string>
+    <string name="select">Press menu to select an image processor</string>
 
 </resources>

@@ -37,7 +37,7 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale"
             android:hardwareAccelerated="true"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Black.NoTitleBar" >
+            android:theme="@style/Theme.Green" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
