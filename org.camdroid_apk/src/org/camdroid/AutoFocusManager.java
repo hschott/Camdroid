@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.camdriod.R;
 import org.camdroid.util.Utils;
 
 import android.annotation.TargetApi;
@@ -104,7 +103,7 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
 				|| Camera.Parameters.FOCUS_MODE_MACRO.equals(focusMode);
 
 		List<Integer> resId = new ArrayList<Integer>();
-		if (auto_focus_callable) {
+		if (this.auto_focus_callable) {
 			resId.add(R.raw.beep);
 		}
 		if (canDisableSystemShutterSound) {

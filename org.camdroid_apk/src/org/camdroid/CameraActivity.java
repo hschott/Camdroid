@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.camdriod.R;
+import org.camdroid.processor.FrameProcessor;
 import org.camdroid.processor.FrameProcessors;
 import org.camdroid.util.StorageUtils;
 
@@ -16,17 +16,20 @@ import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.LinearLayout;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.Toast;
 
 public class CameraActivity extends ActionBarActivity {
 	private CameraPreviewView mPreview;
 	private ProcessFramesView mProcessorView;
+	private Fragment mConfigUIFragment;
 
 	private SimpleDateFormat sdf = new SimpleDateFormat(
 			"yyyy-MM-dd_HH-mm-ss-SS", Locale.US);
@@ -40,27 +43,6 @@ public class CameraActivity extends ActionBarActivity {
 				CameraActivity.this.finish();
 			}
 		}
-	};
-
-	private OnClickListener onClickListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			if (v.getId() == R.id.camera) {
-				CameraActivity.this.takePicture();
-			}
-		}
-	};
-
-	public boolean onOptionsItemSelected(MenuItem item) {
-		setFrameProcessor(item.getItemId());
-		return true;
-	};
-
-	public boolean onCreateOptionsMenu(android.view.Menu menu) {
-		for (FrameProcessors f : FrameProcessors.values()) {
-			menu.add(Menu.NONE, f.ordinal(), Menu.NONE, f.name());
-		}
-		return true;
 	};
 
 	@Override
@@ -77,10 +59,6 @@ public class CameraActivity extends ActionBarActivity {
 		this.mProcessorView = (ProcessFramesView) this
 				.findViewById(R.id.processor_view);
 
-		LinearLayout v = (LinearLayout) this.findViewById(R.id.camera);
-
-		v.setOnClickListener(this.onClickListener);
-
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
 		// Catch screen off event
@@ -88,14 +66,68 @@ public class CameraActivity extends ActionBarActivity {
 		f.addAction(Intent.ACTION_SCREEN_OFF);
 		this.registerReceiver(this.screenOffReceiver, f);
 
-	}
+	};
 
-	protected void setFrameProcessor(int ordinal) {
-		FrameProcessors t = FrameProcessors.values()[ordinal];
-		mPreview.stopPreview();
-		mProcessorView.setFrameProcessor(t.newFrameProcessor(mProcessorView));
-		mPreview.startPreview();
-	}
+	@Override
+	public boolean onCreateOptionsMenu(android.view.Menu menu) {
+		MenuItem i1 = menu
+				.add(Menu.NONE, Menu.NONE, Menu.NONE,
+						R.string.configure_processor)
+				.setIcon(android.R.drawable.ic_menu_preferences)
+				.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+
+					@Override
+					public boolean onMenuItemClick(MenuItem item) {
+						FrameProcessor frameProcessor = CameraActivity.this.mProcessorView
+								.getFrameProcessor();
+
+						if (frameProcessor != null) {
+							CameraActivity.this.mConfigUIFragment = frameProcessor
+									.getConfigUiFragment();
+							FragmentManager fm = CameraActivity.this
+									.getSupportFragmentManager();
+							FragmentTransaction ft = fm.beginTransaction();
+							ft.replace(R.id.config_container,
+									CameraActivity.this.mConfigUIFragment, null);
+							ft.show(CameraActivity.this.mConfigUIFragment);
+							ft.commit();
+						}
+
+						return true;
+					}
+				});
+		MenuItemCompat
+				.setShowAsAction(i1, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+
+		MenuItem i2 = menu
+				.add(Menu.NONE, Menu.NONE, Menu.NONE, R.string.take_picture)
+				.setIcon(android.R.drawable.ic_menu_camera)
+				.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+					@Override
+					public boolean onMenuItemClick(MenuItem item) {
+						CameraActivity.this.takePicture();
+						return true;
+					}
+				});
+		MenuItemCompat
+				.setShowAsAction(i2, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+
+		for (final FrameProcessors f : FrameProcessors.values()) {
+			menu.add(Menu.NONE, f.ordinal(), Menu.NONE, f.name())
+					.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+						@Override
+						public boolean onMenuItemClick(MenuItem item) {
+							if (CameraActivity.this.mConfigUIFragment != null) {
+								((UIFragment) CameraActivity.this.mConfigUIFragment)
+										.remove();
+							}
+							CameraActivity.this.setFrameProcessor(f.ordinal());
+							return true;
+						}
+					});
+		}
+		return true;
+	};
 
 	@Override
 	protected void onDestroy() {
@@ -122,8 +154,9 @@ public class CameraActivity extends ActionBarActivity {
 		this.mPreview.createCamera();
 
 		this.mPreview.addCameraFrameListener(this.mProcessorView);
-		
-		Toast.makeText(getApplicationContext(), R.string.select, Toast.LENGTH_LONG).show();
+
+		Toast.makeText(this.getApplicationContext(), R.string.select,
+				Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -132,6 +165,14 @@ public class CameraActivity extends ActionBarActivity {
 		this.mPreview.releaseCamera();
 
 		this.mPreview.removeCameraFrameListener(this.mProcessorView);
+	}
+
+	protected void setFrameProcessor(int ordinal) {
+		FrameProcessors t = FrameProcessors.values()[ordinal];
+		this.mPreview.stopPreview();
+		this.mProcessorView.setFrameProcessor(t
+				.newFrameProcessor(this.mProcessorView));
+		this.mPreview.startPreview();
 	}
 
 	public void takePicture() {
@@ -153,11 +194,11 @@ public class CameraActivity extends ActionBarActivity {
 				StorageUtils.updateMedia(
 						CameraActivity.this.getApplicationContext(), file);
 
-				Toast.makeText(getApplicationContext(), R.string.picture_saved,
-						Toast.LENGTH_SHORT).show();
+				Toast.makeText(CameraActivity.this.getApplicationContext(),
+						R.string.picture_saved, Toast.LENGTH_SHORT).show();
 
-				mPreview.stopPreview();
-				mPreview.startPreview();
+				CameraActivity.this.mPreview.stopPreview();
+				CameraActivity.this.mPreview.startPreview();
 			}
 		};
 

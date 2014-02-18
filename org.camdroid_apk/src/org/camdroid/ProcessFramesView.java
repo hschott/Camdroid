@@ -11,6 +11,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.AttributeSet;
@@ -31,8 +32,10 @@ public class ProcessFramesView extends ViewGroup implements
 	private ExecutorService mExecutor;
 	private FrameProcessor mProcessor;
 	private Camera.Size mPreviewSize;
-
 	private float mScale;
+
+	private FpsMeter fpsMeter;
+	private Paint fpsPaint;
 
 	public ProcessFramesView(Context context) {
 		super(context);
@@ -50,8 +53,59 @@ public class ProcessFramesView extends ViewGroup implements
 	}
 
 	@Override
+	public void drawBitmap(Bitmap bitmap) {
+		if (this.mHolder == null)
+			return;
+
+		Canvas canvas = null;
+		try {
+			synchronized (this.mHolder) {
+				canvas = this.mHolder.lockCanvas(null);
+
+				int bmpWidth = bitmap.getWidth();
+				int bmpHeight = bitmap.getHeight();
+
+				int canvasWidth = canvas.getWidth();
+				int canvasHeight = canvas.getHeight();
+
+				if (this.mScale != 0) {
+					canvas.drawBitmap(bitmap, new Rect(0, 0, bmpWidth,
+							bmpHeight),
+							new Rect((int) ((canvasWidth - this.mScale
+									* bmpWidth) / 2),
+									(int) ((canvasHeight - this.mScale
+											* bmpHeight) / 2),
+									(int) ((canvasWidth - this.mScale
+											* bmpWidth) / 2 + this.mScale
+											* bmpWidth),
+									(int) ((canvasHeight - this.mScale
+											* bmpHeight) / 2 + this.mScale
+											* bmpHeight)), null);
+				} else {
+					canvas.drawBitmap(bitmap, new Rect(0, 0, bmpWidth,
+							bmpHeight), new Rect((canvasWidth - bmpWidth) / 2,
+							(canvasHeight - bmpHeight) / 2,
+							(canvasWidth - bmpWidth) / 2 + bmpWidth,
+							(canvasHeight - bmpHeight) / 2 + bmpHeight), null);
+				}
+
+				String fps = this.fpsMeter.measure();
+				canvas.drawText(fps, 12, canvasHeight - 12, this.fpsPaint);
+			}
+		} finally {
+			if (canvas != null) {
+				this.mHolder.unlockCanvasAndPost(canvas);
+			}
+		}
+	}
+
+	@Override
 	public AutoFocusManager getAutoFocusManager() {
 		return this.mAutoFocusManager;
+	}
+
+	public FrameProcessor getFrameProcessor() {
+		return this.mProcessor;
 	}
 
 	private void initView(Context context) {
@@ -70,24 +124,6 @@ public class ProcessFramesView extends ViewGroup implements
 		holder.addCallback(this);
 	}
 
-	public void setFrameProcessor(FrameProcessor processor) {
-		if (processor == null) {
-			FrameProcessor tmp = mProcessor;
-			this.mProcessor = null;
-			if (tmp != null) {
-				tmp.release();
-			}
-		} else if (mProcessor != null
-				&& !processor.getClass()
-						.isAssignableFrom(mProcessor.getClass())) {
-			FrameProcessor tmp = mProcessor;
-			this.mProcessor = processor;
-			tmp.release();
-		} else {
-			this.mProcessor = processor;
-		}
-	}
-
 	@Override
 	public void onCameraPreviewFrame(byte[] data, int previewFormat) {
 		if (ImageFormat.NV21 != previewFormat)
@@ -100,7 +136,7 @@ public class ProcessFramesView extends ViewGroup implements
 				&& !this.mAutoFocusManager.isFocused())
 			return;
 
-		if (mProcessor == null)
+		if (this.mProcessor == null)
 			return;
 
 		if (this.mProcessor.put(data)) {
@@ -112,93 +148,32 @@ public class ProcessFramesView extends ViewGroup implements
 	public void onCameraPreviewStarted(Camera camera) {
 		this.mPreviewSize = camera.getParameters().getPreviewSize();
 
-		if (mProcessor != null)
-			mProcessor.allocate(mPreviewSize.width, mPreviewSize.height);
+		if (this.mProcessor != null) {
+			this.mProcessor.allocate(this.mPreviewSize.width,
+					this.mPreviewSize.height);
+		}
 
-		this.mScale = Math.min(((float) getMeasuredHeight())
-				/ mPreviewSize.height, ((float) getMeasuredWidth())
-				/ mPreviewSize.width);
+		this.mScale = Math.min(((float) this.getMeasuredHeight())
+				/ this.mPreviewSize.height, ((float) this.getMeasuredWidth())
+				/ this.mPreviewSize.width);
 
 		this.mExecutor = Executors.newFixedThreadPool(1);
-	}
 
-	public void drawBitmap(Bitmap bitmap) {
-		if (mHolder == null) {
-			return;
-		}
+		this.fpsMeter = new FpsMeter(this.mPreviewSize.width,
+				this.mPreviewSize.height);
 
-		Canvas canvas = null;
-		try {
-			synchronized (mHolder) {
-				canvas = mHolder.lockCanvas(null);
-
-				int bmpWidth = bitmap.getWidth();
-				int bmpHeight = bitmap.getHeight();
-
-				int canvasWidth = canvas.getWidth();
-				int canvasHeight = canvas.getHeight();
-
-				if (mScale != 0) {
-					canvas.drawBitmap(
-							bitmap,
-							new Rect(0, 0, bmpWidth, bmpHeight),
-							new Rect(
-									(int) ((canvasWidth - mScale * bmpWidth) / 2),
-									(int) ((canvasHeight - mScale * bmpHeight) / 2),
-									(int) ((canvasWidth - mScale * bmpWidth) / 2 + mScale
-											* bmpWidth),
-									(int) ((canvasHeight - mScale * bmpHeight) / 2 + mScale
-											* bmpHeight)), null);
-				} else {
-					canvas.drawBitmap(bitmap, new Rect(0, 0, bmpWidth,
-							bmpHeight), new Rect((canvasWidth - bmpWidth) / 2,
-							(canvasHeight - bmpHeight) / 2,
-							(canvasWidth - bmpWidth) / 2 + bmpWidth,
-							(canvasHeight - bmpHeight) / 2 + bmpHeight), null);
-				}
-			}
-		} finally {
-			if (canvas != null) {
-				mHolder.unlockCanvasAndPost(canvas);
-			}
-		}
+		this.fpsPaint = new Paint();
+		this.fpsPaint.setColor(this.getResources().getColor(
+				R.color.config_ui_green));
+		this.fpsPaint.setTextSize(20);
 	}
 
 	@Override
 	public void onCameraPreviewStopped() {
 		this.mExecutor.shutdownNow();
-		if (mProcessor != null) {
+		if (this.mProcessor != null) {
 			this.mProcessor.release();
 		}
-	}
-
-	@Override
-	public void setAutoFocusManager(AutoFocusManager autoFocusManager) {
-		this.mAutoFocusManager = autoFocusManager;
-	}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder holder) {
-	}
-
-	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {
-		mHolder = holder;
-	}
-
-	@Override
-	public void surfaceDestroyed(SurfaceHolder holder) {
-		mHolder = null;
-	}
-
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		final int width = resolveSize(this.getSuggestedMinimumWidth(),
-				widthMeasureSpec);
-		final int height = resolveSize(this.getSuggestedMinimumHeight(),
-				heightMeasureSpec);
-		this.setMeasuredDimension(width, height);
 	}
 
 	@Override
@@ -231,5 +206,59 @@ public class ProcessFramesView extends ViewGroup implements
 						(height + scaledChildHeight) / 2);
 			}
 		}
+	}
+
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		final int width = resolveSize(this.getSuggestedMinimumWidth(),
+				widthMeasureSpec);
+		final int height = resolveSize(this.getSuggestedMinimumHeight(),
+				heightMeasureSpec);
+		this.setMeasuredDimension(width, height);
+	}
+
+	@Override
+	public void setAutoFocusManager(AutoFocusManager autoFocusManager) {
+		this.mAutoFocusManager = autoFocusManager;
+	}
+
+	public void setFrameProcessor(FrameProcessor processor) {
+		if (processor == null) {
+			FrameProcessor tmp = this.mProcessor;
+			this.mProcessor = null;
+			if (tmp != null) {
+				tmp.release();
+			}
+			return;
+		}
+
+		if (this.mProcessor != null
+				&& processor.getClass().isAssignableFrom(
+						this.mProcessor.getClass()))
+			return;
+
+		if (this.mProcessor != null) {
+			FrameProcessor tmp = this.mProcessor;
+			this.mProcessor = processor;
+			tmp.release();
+		} else {
+			this.mProcessor = processor;
+		}
+
+	}
+
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+		this.mHolder = holder;
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+	}
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		this.mHolder = null;
 	}
 }

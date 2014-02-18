@@ -2,8 +2,8 @@ package org.camdroid.processor;
 
 import java.util.ArrayList;
 
-import org.camdriod.R;
 import org.camdroid.OnCameraPreviewListener.FrameDrawer;
+import org.camdroid.R;
 import org.camdroid.UIFragment;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;

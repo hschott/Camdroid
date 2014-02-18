@@ -1,18 +1,128 @@
 package org.camdroid.processor;
 
 import org.camdroid.OnCameraPreviewListener.FrameDrawer;
+import org.camdroid.R;
+import org.camdroid.UIFragment;
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-public class SharpenThresholdProcessor extends AbstractOpenCVFrameProcessor {
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
-	private Mat image;
-	
-	public SharpenThresholdProcessor(FrameDrawer drawer) {
+public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
+
+	public static class AdaptiveThresholdUIFragment extends Fragment implements
+			UIFragment {
+		public static AdaptiveThresholdUIFragment newInstance() {
+			AdaptiveThresholdUIFragment f = new AdaptiveThresholdUIFragment();
+			return f;
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View v = inflater.inflate(R.layout.adaptivethreshold_ui, null);
+			ImageView close = (ImageView) v.findViewById(R.id.close);
+			close.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					AdaptiveThresholdUIFragment.this.remove();
+				}
+			});
+
+			SeekBar blocksizeSeekBar = (SeekBar) v.findViewById(R.id.blocksize);
+			blocksizeSeekBar.setProgress(blocksize);
+
+			blocksizeSeekBar
+					.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+						@Override
+						public void onProgressChanged(SeekBar seekBar,
+								int progress, boolean fromUser) {
+							if (fromUser) {
+								if (progress % 2 == 0) {
+									blocksize = progress + 3;
+								} else {
+									blocksize = progress + 2;
+								}
+							}
+						}
+
+						@Override
+						public void onStartTrackingTouch(SeekBar seekBar) {
+						}
+
+						@Override
+						public void onStopTrackingTouch(SeekBar seekBar) {
+						}
+					});
+
+			SeekBar reductionSeekBar = (SeekBar) v.findViewById(R.id.reduction);
+			reductionSeekBar.setProgress(reduction);
+
+			reductionSeekBar
+					.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+						@Override
+						public void onProgressChanged(SeekBar seekBar,
+								int progress, boolean fromUser) {
+							if (fromUser) {
+								reduction = progress;
+							}
+						}
+
+						@Override
+						public void onStartTrackingTouch(SeekBar seekBar) {
+						}
+
+						@Override
+						public void onStopTrackingTouch(SeekBar seekBar) {
+						}
+					});
+
+			return v;
+		}
+
+		@Override
+		public void remove() {
+			FragmentActivity activity = this.getActivity();
+			if (activity != null) {
+				activity.getSupportFragmentManager().beginTransaction()
+						.remove(this).commit();
+			}
+		}
+	}
+
+	private static int reduction = 15;
+	private static int blocksize = 5;
+
+	public AdaptiveThresholdProcessor(FrameDrawer drawer) {
 		super(drawer);
+	}
+
+	@Override
+	public void allocate(int width, int height) {
+		super.allocate(width, height);
+	}
+
+	@Override
+	public Fragment getConfigUiFragment() {
+		return AdaptiveThresholdUIFragment.newInstance();
+	}
+
+	@Override
+	public void release() {
+		super.release();
+		this.aquireLock();
+		this.locked = false;
 	}
 
 	@Override
@@ -20,42 +130,25 @@ public class SharpenThresholdProcessor extends AbstractOpenCVFrameProcessor {
 		if (this.locked)
 			return;
 
-		if (in == null || out == null)
+		if (this.in == null || this.out == null)
 			return;
 
 		this.locked = true;
 
 		try {
-			Mat gray = this.in.submat(0, height, 0, width);
+			Mat gray = this.in.submat(0, this.height, 0, this.width);
 
-			Core.normalize(gray, gray, 15, 255, Core.NORM_MINMAX);
-
-			Imgproc.GaussianBlur(gray, image, new Size(0, 0), 3);
-			Core.addWeighted(gray, 1.8, image, -0.8, 0, image);
-
-			Imgproc.adaptiveThreshold(image, image, 255,
+			Imgproc.adaptiveThreshold(gray, gray, 255,
 					Imgproc.THRESH_BINARY_INV, Imgproc.ADAPTIVE_THRESH_MEAN_C,
-					5, 15);
+					blocksize, reduction);
 
-			Utils.matToBitmap(image, out);
+			Utils.matToBitmap(gray, this.out);
 
-			drawer.drawBitmap(out);
+			this.drawer.drawBitmap(this.out);
 		} catch (Exception e) {
 		}
 
 		this.locked = false;
-	}
-
-	@Override
-	public void allocate(int width, int height) {
-		super.allocate(width, height);
-		image = new Mat();
-	}
-
-	@Override
-	public void release() {
-		super.release();
-		image.release();
 	}
 
 }

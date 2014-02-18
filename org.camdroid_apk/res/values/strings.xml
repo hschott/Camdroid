@@ -2,8 +2,27 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <string name="app_name">Camdroid</string>
-    <string name="button_shutter">Take Picture</string>
-    <string name="picture_saved">Saved in Camdroid Album</string>
     <string name="select">Press menu to select an image processor</string>
+    <string name="take_picture">Take picture</string>
+    <string name="configure_processor">Configure</string>
+    <string name="picture_saved">Saved in Camdroid Album</string>
+    <string name="not_configurable">Not configurable</string>
+
+    <!-- contour detection -->
+    <string name="threshold">Threshold</string>
+
+    <!-- unsharpenmask -->
+    <string name="sigma_x">Gaussian standard deviation</string>
+    <string name="alpha">Weight of the first array</string>
+    <string name="beta">Weight of the second array</string>
+    <string name="gamma">Added scalar</string>
+
+    <!-- adaptive threshold -->
+    <string name="blocksize">Blocksize</string>
+    <string name="reduction">Reduction</string>
+
+    <!-- movement detection -->
+    <string name="learning_rate">Learning rate</string>
+    <string name="object_size">Object size</string>
 
 </resources>
