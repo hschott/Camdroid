@@ -19,47 +19,45 @@
 
 <resources>
 
-    <style name="Theme.Green" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+    <style name="Theme.Green" parent="@style/Theme.AppCompat.Light">
         <item name="actionBarItemBackground">@drawable/selectable_background_green</item>
         <item name="popupMenuStyle">@style/PopupMenu.Green</item>
         <item name="dropDownListViewStyle">@style/DropDownListView.Green</item>
         <item name="actionBarTabStyle">@style/ActionBarTabStyle.Green</item>
         <item name="actionDropDownStyle">@style/DropDownNav.Green</item>
-        <item name="actionBarStyle">@style/ActionBar.Transparent.Green</item>
+        <item name="actionBarStyle">@style/ActionBar.Solid.Green</item>
         <item name="actionModeBackground">@drawable/cab_background_top_green</item>
         <item name="actionModeSplitBackground">@drawable/cab_background_bottom_green</item>
         <item name="actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Green</item>
 
-                <!-- Light.DarkActionBar specific -->
-        <item name="actionBarWidgetTheme">@style/Theme.Green.Widget</item>
-
+        
     </style>
 
-    <style name="ActionBar.Solid.Green" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+    <style name="ActionBar.Solid.Green" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
         <item name="background">@drawable/ab_solid_green</item>
         <item name="backgroundStacked">@drawable/ab_stacked_solid_green</item>
         <item name="backgroundSplit">@drawable/ab_bottom_solid_green</item>
         <item name="progressBarStyle">@style/ProgressBar.Green</item>
     </style>
 
-    <style name="ActionBar.Transparent.Green" parent="@style/Widget.AppCompat.ActionBar">
+    <style name="ActionBar.Transparent.Green" parent="@style/Widget.AppCompat.Light.ActionBar">
         <item name="background">@drawable/ab_transparent_green</item>
         <item name="progressBarStyle">@style/ProgressBar.Green</item>
     </style>
 	
-    <style name="PopupMenu.Green" parent="@style/Widget.AppCompat.PopupMenu">	
+    <style name="PopupMenu.Green" parent="@style/Widget.AppCompat.Light.PopupMenu">	
         <item name="android:popupBackground">@drawable/menu_dropdown_panel_green</item>	
     </style>
 	
-    <style name="DropDownListView.Green" parent="@style/Widget.AppCompat.ListView.DropDown">
+    <style name="DropDownListView.Green" parent="@style/Widget.AppCompat.Light.ListView.DropDown">
         <item name="android:listSelector">@drawable/selectable_background_green</item>
     </style>
 
-    <style name="ActionBarTabStyle.Green" parent="@style/Widget.AppCompat.ActionBar.TabView">
+    <style name="ActionBarTabStyle.Green" parent="@style/Widget.AppCompat.Light.ActionBar.TabView">
         <item name="android:background">@drawable/tab_indicator_ab_green</item>
     </style>
 	
-    <style name="DropDownNav.Green" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
+    <style name="DropDownNav.Green" parent="@style/Widget.AppCompat.Light.Spinner.DropDown.ActionBar">
         <item name="android:background">@drawable/spinner_background_ab_green</item>
         <item name="android:popupBackground">@drawable/menu_dropdown_panel_green</item>
         <item name="android:dropDownSelector">@drawable/selectable_background_green</item>
@@ -69,7 +67,7 @@
         <item name="android:progressDrawable">@drawable/progress_horizontal_green</item>
     </style>
     
-    <style name="ActionButton.CloseMode.Green" parent="@style/Widget.AppCompat.ActionButton.CloseMode">
+    <style name="ActionButton.CloseMode.Green" parent="@style/Widget.AppCompat.Light.ActionButton.CloseMode">
         <item name="android:background">@drawable/btn_cab_done_green</item>
     </style>
     

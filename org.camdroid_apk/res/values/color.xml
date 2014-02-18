@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <color name="sidebar">#66191919</color>
+    <color name="config_ui_bg">#EEAAAAAA</color>
+    <color name="config_ui_head">#EE669900</color>
+    <color name="config_ui_green">#99cc00</color>
 
 </resources>
