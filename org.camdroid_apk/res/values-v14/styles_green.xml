@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- File created by the Android Action Bar Style Generator
+<!--
+     File created by the Android Action Bar Style Generator
 
      Copyright (C) 2011 The Android Open Source Project
      Copyright (C) 2012 readyState Software Ltd
@@ -29,8 +30,8 @@
         <item name="android:actionModeBackground">@drawable/cab_background_top_green</item>
         <item name="android:actionModeSplitBackground">@drawable/cab_background_bottom_green</item>
         <item name="android:actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Green</item>
-        
-        
+        <item name="android:dropDownSpinnerStyle">@style/Spinnergreen</item>
+        <item name="android:seekBarStyle">@style/SeekBargreen</item>
     </style>
 
     <style name="ActionBar.Solid.Green" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
@@ -44,11 +45,22 @@
         <item name="android:background">@drawable/ab_transparent_green</item>
         <item name="android:progressBarStyle">@style/ProgressBar.Green</item>
     </style>
-    
+
     <!-- this style is only referenced in a Light.DarkActionBar based theme -->
     <style name="Theme.Green.Widget" parent="@style/Theme.AppCompat">
         <item name="android:popupMenuStyle">@style/PopupMenu.Green</item>
         <item name="android:dropDownListViewStyle">@style/DropDownListView.Green</item>
+    </style>
+
+    <style name="Spinnergreen" parent="android:Widget.Holo.Light.Spinner">
+        <item name="android:background">@drawable/green_spinner_background_holo_light</item>
+        <item name="android:dropDownSelector">@drawable/green_list_selector_holo_light</item>
+    </style>
+
+    <style name="SeekBargreen" parent="android:Widget.Holo.Light.SeekBar">
+        <item name="android:progressDrawable">@drawable/green_scrubber_progress_horizontal_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/green_scrubber_progress_horizontal_holo_light</item>
+        <item name="android:thumb">@drawable/green_scrubber_control_selector_holo_light</item>
     </style>
 
 </resources>

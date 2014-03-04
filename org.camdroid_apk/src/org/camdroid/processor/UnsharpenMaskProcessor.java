@@ -11,51 +11,49 @@ import org.opencv.imgproc.Imgproc;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 
-	public static class UnsharpenMaskUIFragment extends Fragment implements
-			UIFragment {
+	public static class UnsharpenMaskUIFragment extends ConfigurationFragment
+			implements UIFragment {
 		public static UnsharpenMaskUIFragment newInstance() {
 			UnsharpenMaskUIFragment f = new UnsharpenMaskUIFragment();
 			return f;
 		}
 
 		@Override
+		public int getLayoutId() {
+			return R.layout.unsharpenmask_ui;
+		}
+
+		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.unsharpenmask_ui, null);
-			ImageView close = (ImageView) v.findViewById(R.id.close);
-			close.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					UnsharpenMaskUIFragment.this.remove();
-				}
-			});
+			View v = super
+					.onCreateView(inflater, container, savedInstanceState);
 
 			SeekBar sigmaXSeekBar = (SeekBar) v.findViewById(R.id.sigma_x);
-			sigmaXSeekBar.setProgress(kernel_size);
+			sigmaXSeekBar.setMax(35);
+			sigmaXSeekBar.setProgress(sigma_x);
 
 			sigmaXSeekBar
 					.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 						@Override
 						public void onProgressChanged(SeekBar seekBar,
 								int progress, boolean fromUser) {
+							if (progress % 2 == 0) {
+								sigma_x = progress == 0 ? 1 : progress;
+							} else {
+								sigma_x = progress;
+							}
 							if (fromUser) {
-								if (progress % 2 == 0) {
-									kernel_size = progress + 1;
-								} else {
-									kernel_size = progress;
-								}
+								UnsharpenMaskUIFragment.this.showValue(sigma_x
+										+ "px");
 							}
 						}
 
@@ -69,6 +67,7 @@ public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 					});
 
 			SeekBar alphaSeekBar = (SeekBar) v.findViewById(R.id.alpha);
+			alphaSeekBar.setMax(50);
 			alphaSeekBar.setProgress(alpha);
 
 			alphaSeekBar
@@ -76,8 +75,10 @@ public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 						@Override
 						public void onProgressChanged(SeekBar seekBar,
 								int progress, boolean fromUser) {
+							alpha = progress;
 							if (fromUser) {
-								alpha = progress;
+								UnsharpenMaskUIFragment.this
+										.showValue((double) alpha / 10);
 							}
 						}
 
@@ -91,6 +92,7 @@ public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 					});
 
 			SeekBar betaSeekBar = (SeekBar) v.findViewById(R.id.beta);
+			betaSeekBar.setMax(20);
 			betaSeekBar.setProgress(beta);
 
 			betaSeekBar
@@ -98,8 +100,10 @@ public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 						@Override
 						public void onProgressChanged(SeekBar seekBar,
 								int progress, boolean fromUser) {
+							beta = progress;
 							if (fromUser) {
-								beta = progress;
+								UnsharpenMaskUIFragment.this
+										.showValue(((double) beta - 10) / 10);
 							}
 						}
 
@@ -114,18 +118,9 @@ public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 
 			return v;
 		}
-
-		@Override
-		public void remove() {
-			FragmentActivity activity = this.getActivity();
-			if (activity != null) {
-				activity.getSupportFragmentManager().beginTransaction()
-						.remove(this).commit();
-			}
-		}
 	}
 
-	private static int kernel_size = 3;
+	private static int sigma_x = 3;
 	private static int alpha = 18;
 	private static int beta = 2;
 
@@ -167,7 +162,7 @@ public class UnsharpenMaskProcessor extends AbstractOpenCVFrameProcessor {
 		try {
 			Mat rgb = this.rgb();
 
-			Imgproc.blur(rgb, this.mask, new Size(kernel_size, kernel_size));
+			Imgproc.blur(rgb, this.mask, new Size(sigma_x, sigma_x));
 			Core.addWeighted(rgb, (double) alpha / 10, this.mask,
 					((double) beta - 10) / 10, 0, rgb);
 

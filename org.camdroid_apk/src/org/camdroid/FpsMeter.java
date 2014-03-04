@@ -15,7 +15,7 @@ public class FpsMeter {
 
 	private long frames;
 	private double fps;
-	private static final int STEP = 20;
+	private static final int STEP = 10;
 
 	public FpsMeter(int width, int height) {
 		super();
@@ -56,7 +56,19 @@ public class FpsMeter {
 				this.framesPerSecond = FPS_FORMAT.format(this.fps) + " FPS";
 			}
 		}
-		return this.framesPerSecond;
+
+		StringBuilder sb = new StringBuilder(this.framesPerSecond);
+		sb.append(' ');
+		sb.append('|');
+		for (int i = 0; i < this.frames; i++) {
+			sb.append('.');
+		}
+		for (int i = 0; i < STEP - this.frames - 1; i++) {
+			sb.append(' ');
+		}
+		sb.append('|');
+		return sb.toString();
+
 	}
 
 }

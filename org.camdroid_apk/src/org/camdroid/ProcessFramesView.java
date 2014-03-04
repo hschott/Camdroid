@@ -1,5 +1,7 @@
 package org.camdroid;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,6 +38,9 @@ public class ProcessFramesView extends ViewGroup implements
 
 	private FpsMeter fpsMeter;
 	private Paint fpsPaint;
+
+	private SimpleDateFormat sdf = new SimpleDateFormat(
+			"yyyy-MM-dd_HH-mm-ss-SS", Locale.US);
 
 	public ProcessFramesView(Context context) {
 		super(context);
@@ -90,7 +95,7 @@ public class ProcessFramesView extends ViewGroup implements
 				}
 
 				String fps = this.fpsMeter.measure();
-				canvas.drawText(fps, 12, canvasHeight - 12, this.fpsPaint);
+				canvas.drawText(fps, 12, canvasHeight - 6, this.fpsPaint);
 			}
 		} finally {
 			if (canvas != null) {
@@ -163,9 +168,9 @@ public class ProcessFramesView extends ViewGroup implements
 				this.mPreviewSize.height);
 
 		this.fpsPaint = new Paint();
-		this.fpsPaint.setColor(this.getResources().getColor(
-				R.color.config_ui_green));
-		this.fpsPaint.setTextSize(20);
+		this.fpsPaint.setColor(this.getResources()
+				.getColor(R.color.green_color));
+		this.fpsPaint.setTextSize(12);
 	}
 
 	@Override
@@ -260,5 +265,11 @@ public class ProcessFramesView extends ViewGroup implements
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		this.mHolder = null;
+	}
+
+	public void takePicture(String filename) {
+		if (this.mProcessor != null) {
+			this.mProcessor.store(filename);
+		}
 	}
 }

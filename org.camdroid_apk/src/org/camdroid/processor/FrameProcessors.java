@@ -3,7 +3,7 @@ package org.camdroid.processor;
 import org.camdroid.OnCameraPreviewListener.FrameDrawer;
 
 public enum FrameProcessors {
-	EqualizeGray, AdaptiveThreshold, ContourDetection, MovementDetection, UnsharpenMask, PassThrough;
+	EqualizeGray, AdaptiveThreshold, ContourDetection, MovementDetection, UnsharpenMask, CascadeClassifier, PassThrough;
 
 	public FrameProcessor newFrameProcessor(FrameDrawer drawer) {
 		switch (this.ordinal()) {
@@ -21,6 +21,9 @@ public enum FrameProcessors {
 
 		case 4:
 			return new UnsharpenMaskProcessor(drawer);
+
+		case 5:
+			return new CascadeClassifierProcessor(drawer);
 
 		default:
 			return new PassThroughProcessor(drawer);

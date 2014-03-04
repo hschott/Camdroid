@@ -59,6 +59,11 @@ public class CameraActivity extends ActionBarActivity {
 		this.mProcessorView = (ProcessFramesView) this
 				.findViewById(R.id.processor_view);
 
+		this.mProcessorView.setFrameProcessor(FrameProcessors.PassThrough
+				.newFrameProcessor(this.mProcessorView));
+		this.getSupportActionBar().setSubtitle(
+				FrameProcessors.PassThrough.name());
+
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
 		// Catch screen off event
@@ -127,7 +132,7 @@ public class CameraActivity extends ActionBarActivity {
 					});
 		}
 		return true;
-	};
+	}
 
 	@Override
 	protected void onDestroy() {
@@ -168,26 +173,36 @@ public class CameraActivity extends ActionBarActivity {
 	}
 
 	protected void setFrameProcessor(int ordinal) {
+		this.getSupportActionBar().setSubtitle(null);
 		FrameProcessors t = FrameProcessors.values()[ordinal];
 		this.mPreview.stopPreview();
 		this.mProcessorView.setFrameProcessor(t
 				.newFrameProcessor(this.mProcessorView));
 		this.mPreview.startPreview();
+		this.getSupportActionBar().setSubtitle(t.name());
 	}
 
 	public void takePicture() {
-		Camera.PictureCallback callback = new Camera.PictureCallback() {
+		Date date = new Date();
+		final String formated = CameraActivity.this.sdf.format(date);
 
+		String filename = StorageUtils.getStorageDirectory(
+				CameraActivity.this.getApplicationContext(), "Camdroid")
+				+ "/" + formated + "_" + "PROCESSED" + ".jpg";
+
+		this.mProcessorView.takePicture(filename);
+		StorageUtils.updateMedia(CameraActivity.this.getApplicationContext(),
+				new File(filename));
+
+		Camera.PictureCallback callback = new Camera.PictureCallback() {
 			@Override
 			public void onPictureTaken(byte[] data, Camera camera) {
-				Date date = new Date();
-				String formated = CameraActivity.this.sdf.format(date);
 
 				String filename = StorageUtils
 						.getStorageDirectory(
 								CameraActivity.this.getApplicationContext(),
 								"Camdroid")
-						+ "/" + formated + "_" + "CAPTURE" + ".jpg";
+						+ "/" + formated + "_" + "CAPTURED" + ".jpg";
 
 				File file = new File(filename);
 				StorageUtils.writeFile(file, data);
@@ -197,11 +212,10 @@ public class CameraActivity extends ActionBarActivity {
 				Toast.makeText(CameraActivity.this.getApplicationContext(),
 						R.string.picture_saved, Toast.LENGTH_SHORT).show();
 
-				CameraActivity.this.mPreview.stopPreview();
 				CameraActivity.this.mPreview.startPreview();
 			}
 		};
-
 		this.mPreview.takePicture(callback);
+
 	}
 }

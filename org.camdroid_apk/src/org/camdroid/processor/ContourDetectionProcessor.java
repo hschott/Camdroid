@@ -14,38 +14,34 @@ import org.opencv.imgproc.Imgproc;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class ContourDetectionProcessor extends AbstractOpenCVFrameProcessor {
 
-	public static class ContourDetectionUIFragment extends Fragment implements
-			UIFragment {
+	public static class ContourDetectionUIFragment extends
+			ConfigurationFragment implements UIFragment {
 		public static ContourDetectionUIFragment newInstance() {
 			ContourDetectionUIFragment f = new ContourDetectionUIFragment();
 			return f;
 		}
 
 		@Override
+		public int getLayoutId() {
+			return R.layout.contourdetection_ui;
+		}
+
+		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.contourdetection_ui, null);
-			ImageView close = (ImageView) v.findViewById(R.id.close);
-			close.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					ContourDetectionUIFragment.this.remove();
-				}
-			});
+			View v = super
+					.onCreateView(inflater, container, savedInstanceState);
 
 			SeekBar minSeekBar = (SeekBar) v.findViewById(R.id.threshold);
+			minSeekBar.setMax(255);
 			minSeekBar.setProgress(threshold);
 
 			minSeekBar
@@ -55,6 +51,8 @@ public class ContourDetectionProcessor extends AbstractOpenCVFrameProcessor {
 								int progress, boolean fromUser) {
 							if (fromUser) {
 								threshold = progress;
+								ContourDetectionUIFragment.this
+										.showValue(threshold);
 							}
 						}
 
@@ -69,15 +67,6 @@ public class ContourDetectionProcessor extends AbstractOpenCVFrameProcessor {
 
 			return v;
 
-		}
-
-		@Override
-		public void remove() {
-			FragmentActivity activity = this.getActivity();
-			if (activity != null) {
-				activity.getSupportFragmentManager().beginTransaction()
-						.remove(this).commit();
-			}
 		}
 	}
 

@@ -10,45 +10,31 @@ import org.opencv.imgproc.Imgproc;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 public class HalfSidedEqualizeProcessor extends AbstractOpenCVFrameProcessor {
 
-	public static class HalfSidedNormalizeGrayUIFragment extends Fragment
-			implements UIFragment {
+	public static class HalfSidedNormalizeGrayUIFragment extends
+			ConfigurationFragment implements UIFragment {
 		public static HalfSidedNormalizeGrayUIFragment newInstance() {
 			HalfSidedNormalizeGrayUIFragment f = new HalfSidedNormalizeGrayUIFragment();
 			return f;
 		}
 
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.halfsidednormalizegray_ui, null);
-			ImageView close = (ImageView) v.findViewById(R.id.close);
-			close.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					HalfSidedNormalizeGrayUIFragment.this.remove();
-				}
-			});
-
-			return v;
+		public int getLayoutId() {
+			return R.layout.halfsidednormalizegray_ui;
 		}
 
 		@Override
-		public void remove() {
-			FragmentActivity activity = this.getActivity();
-			if (activity != null) {
-				activity.getSupportFragmentManager().beginTransaction()
-						.remove(this).commit();
-			}
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View v = super
+					.onCreateView(inflater, container, savedInstanceState);
+
+			return v;
 		}
 	}
 

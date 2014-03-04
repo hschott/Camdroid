@@ -3,6 +3,6 @@
 
     <color name="config_ui_bg">#EEAAAAAA</color>
     <color name="config_ui_head">#EE669900</color>
-    <color name="config_ui_green">#99cc00</color>
-
+    <color name="green_color">#99cc00</color>
+    
 </resources>

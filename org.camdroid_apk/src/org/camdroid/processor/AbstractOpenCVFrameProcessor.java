@@ -1,5 +1,7 @@
 package org.camdroid.processor;
 
+import java.io.FileOutputStream;
+
 import org.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
@@ -32,7 +34,7 @@ public abstract class AbstractOpenCVFrameProcessor implements FrameProcessor {
 		this.height = height;
 		this.in = new Mat(this.height + (this.height / 2), this.width,
 				CvType.CV_8UC1);
-		this.rgb = new Mat(this.height, this.width, CvType.CV_8UC3);
+		this.rgb = new Mat(this.height, this.width, CvType.CV_8UC4);
 		this.out = Bitmap.createBitmap(this.width, this.height,
 				Bitmap.Config.ARGB_8888);
 	}
@@ -80,7 +82,26 @@ public abstract class AbstractOpenCVFrameProcessor implements FrameProcessor {
 	}
 
 	public Mat rgb() {
-		Imgproc.cvtColor(this.in, this.rgb, Imgproc.COLOR_YUV2RGB_NV21);
+		Imgproc.cvtColor(this.in, this.rgb, Imgproc.COLOR_YUV420sp2RGBA);
 		return this.rgb;
+	}
+
+	@Override
+	public void store(final String filename) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				AbstractOpenCVFrameProcessor.this.aquireLock();
+				try {
+					FileOutputStream fos = new FileOutputStream(filename);
+					AbstractOpenCVFrameProcessor.this.out.compress(
+							Bitmap.CompressFormat.JPEG, 100, fos);
+					fos.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				AbstractOpenCVFrameProcessor.this.locked = false;
+			}
+		}).start();
 	}
 }

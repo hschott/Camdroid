@@ -9,38 +9,34 @@ import org.opencv.imgproc.Imgproc;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
 
-	public static class AdaptiveThresholdUIFragment extends Fragment implements
-			UIFragment {
+	public static class AdaptiveThresholdUIFragment extends
+			ConfigurationFragment implements UIFragment {
 		public static AdaptiveThresholdUIFragment newInstance() {
 			AdaptiveThresholdUIFragment f = new AdaptiveThresholdUIFragment();
 			return f;
 		}
 
 		@Override
+		public int getLayoutId() {
+			return R.layout.adaptivethreshold_ui;
+		}
+
+		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.adaptivethreshold_ui, null);
-			ImageView close = (ImageView) v.findViewById(R.id.close);
-			close.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					AdaptiveThresholdUIFragment.this.remove();
-				}
-			});
+			View v = super
+					.onCreateView(inflater, container, savedInstanceState);
 
 			SeekBar blocksizeSeekBar = (SeekBar) v.findViewById(R.id.blocksize);
+			blocksizeSeekBar.setMax(255);
 			blocksizeSeekBar.setProgress(blocksize);
 
 			blocksizeSeekBar
@@ -54,6 +50,8 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
 								} else {
 									blocksize = progress + 2;
 								}
+								AdaptiveThresholdUIFragment.this
+										.showValue(blocksize + "px");
 							}
 						}
 
@@ -67,7 +65,8 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
 					});
 
 			SeekBar reductionSeekBar = (SeekBar) v.findViewById(R.id.reduction);
-			reductionSeekBar.setProgress(reduction);
+			reductionSeekBar.setMax(250);
+			reductionSeekBar.setProgress(reduction + 125);
 
 			reductionSeekBar
 					.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -75,7 +74,9 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
 						public void onProgressChanged(SeekBar seekBar,
 								int progress, boolean fromUser) {
 							if (fromUser) {
-								reduction = progress;
+								reduction = progress - 125;
+								AdaptiveThresholdUIFragment.this
+										.showValue(reduction);
 							}
 						}
 
@@ -90,19 +91,10 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
 
 			return v;
 		}
-
-		@Override
-		public void remove() {
-			FragmentActivity activity = this.getActivity();
-			if (activity != null) {
-				activity.getSupportFragmentManager().beginTransaction()
-						.remove(this).commit();
-			}
-		}
 	}
 
-	private static int reduction = 15;
-	private static int blocksize = 5;
+	private static int reduction = 10;
+	private static int blocksize = 25;
 
 	public AdaptiveThresholdProcessor(FrameDrawer drawer) {
 		super(drawer);

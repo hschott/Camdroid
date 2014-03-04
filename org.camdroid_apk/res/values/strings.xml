@@ -4,7 +4,7 @@
     <string name="app_name">Camdroid</string>
     <string name="select">Press menu to select an image processor</string>
     <string name="take_picture">Take picture</string>
-    <string name="configure_processor">Configure</string>
+    <string name="configure_processor">Configure processor</string>
     <string name="picture_saved">Saved in Camdroid Album</string>
     <string name="not_configurable">Not configurable</string>
 
@@ -23,6 +23,12 @@
 
     <!-- movement detection -->
     <string name="learning_rate">Learning rate</string>
-    <string name="object_size">Object size</string>
+    <string name="object_min_size">Object minimum size</string>
+    <string name="object_max_size">Object maximum size</string>
+
+    <!-- cascade classifier -->
+    <string name="min_neighbors">Minimum neighbors</string>
+    <string name="scale_factor">Scale factor</string>
+    <string name="classifiers">Select Classifier</string>
 
 </resources>
