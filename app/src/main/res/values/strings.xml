@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Camdroid</string>
+    <string name="select">Press menu to select an image processor</string>
+    <string name="take_picture">Take picture</string>
+    <string name="configure_processor">Configure processor</string>
+    <string name="picture_saved">Saved in Camdroid Album</string>
+    <string name="not_configurable">Not configurable</string>
+
+    <!-- contour detection -->
+    <string name="threshold">Threshold</string>
+
+    <!-- unsharpenmask -->
+    <string name="sigma_x">Gaussian standard deviation</string>
+    <string name="alpha">Weight of the first array</string>
+    <string name="beta">Weight of the second array</string>
+    <string name="gamma">Added scalar</string>
+
+    <!-- adaptive threshold -->
+    <string name="blocksize">Blocksize</string>
+    <string name="reduction">Reduction</string>
+
+    <!-- movement detection -->
+    <string name="learning_rate">Learning rate</string>
+    <string name="object_min_size">Object minimum size</string>
+    <string name="object_max_size">Object maximum size</string>
+
+    <!-- cascade classifier -->
+    <string name="min_neighbors">Minimum neighbors</string>
+    <string name="scale_factor">Scale factor</string>
+    <string name="classifiers">Select Classifier</string>
+
+</resources>
