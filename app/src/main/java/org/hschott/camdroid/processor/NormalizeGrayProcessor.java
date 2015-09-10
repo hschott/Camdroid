@@ -1,31 +1,30 @@
 package org.hschott.camdroid.processor;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import org.hschott.camdroid.ConfigurationFragment;
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.hschott.camdroid.R;
-import org.opencv.core.Mat;
+import org.opencv.core.Core;
 import org.opencv.imgproc.Imgproc;
 
-public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
+public class NormalizeGrayProcessor extends AbstractOpenCVFrameProcessor {
 
-    private static int reduction = 0;
-    private static int blocksize = 15;
+    private static int min = 0;
+    private static int max = 255;
 
-    public static class AdaptiveThresholdUIFragment extends
+    public static class NormalizeGrayUIFragment extends
             ConfigurationFragment {
 
         @Override
         public int getLayoutId() {
-            return R.layout.adaptivethreshold_ui;
+            return R.layout.normalizegray_ui;
         }
 
         @Override
@@ -34,23 +33,19 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
             View v = super
                     .onCreateView(inflater, container, savedInstanceState);
 
-            SeekBar blocksizeSeekBar = (SeekBar) v.findViewById(R.id.blocksize);
-            blocksizeSeekBar.setMax(32);
-            blocksizeSeekBar.setProgress(blocksize);
+            SeekBar minSeekBar = (SeekBar) v.findViewById(R.id.min);
+            minSeekBar.setMax(255);
+            minSeekBar.setProgress(min);
 
-            blocksizeSeekBar
-                    .setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            minSeekBar
+                    .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
                         public void onProgressChanged(SeekBar seekBar,
                                                       int progress, boolean fromUser) {
                             if (fromUser) {
-                                if (progress % 2 == 0) {
-                                    blocksize = progress + 3;
-                                } else {
-                                    blocksize = progress + 2;
-                                }
-                                AdaptiveThresholdUIFragment.this
-                                        .showValue(blocksize + "px");
+                                min = progress;
+                                NormalizeGrayUIFragment.this
+                                        .showValue(min);
                             }
                         }
 
@@ -63,19 +58,19 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
                         }
                     });
 
-            SeekBar reductionSeekBar = (SeekBar) v.findViewById(R.id.reduction);
-            reductionSeekBar.setMax(32);
-            reductionSeekBar.setProgress(reduction + 16);
+            SeekBar maxSeekBar = (SeekBar) v.findViewById(R.id.max);
+            maxSeekBar.setMax(255);
+            maxSeekBar.setProgress(max);
 
-            reductionSeekBar
-                    .setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            maxSeekBar
+                    .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
                         public void onProgressChanged(SeekBar seekBar,
                                                       int progress, boolean fromUser) {
                             if (fromUser) {
-                                reduction = progress - 16;
-                                AdaptiveThresholdUIFragment.this
-                                        .showValue(reduction);
+                                max = progress;
+                                NormalizeGrayUIFragment.this
+                                        .showValue(max);
                             }
                         }
 
@@ -92,31 +87,31 @@ public class AdaptiveThresholdProcessor extends AbstractOpenCVFrameProcessor {
         }
     }
 
-    public AdaptiveThresholdProcessor(FrameDrawer drawer) {
+
+    public NormalizeGrayProcessor(FrameDrawer drawer) {
         super(drawer);
     }
 
     @Override
     public Fragment getConfigUiFragment(Context context) {
-        return Fragment.instantiate(context, AdaptiveThresholdUIFragment.class.getName());
+        return Fragment.instantiate(context, NormalizeGrayUIFragment.class.getName());
     }
 
     @Override
     public FrameWorker createFrameWorker() {
-        return new AdaptiveThresholdFrameWorker(drawer);
+        return new NormalizeGrayFrameWorker(drawer);
     }
 
-    public class AdaptiveThresholdFrameWorker extends AbstractOpenCVFrameWorker {
-        public AdaptiveThresholdFrameWorker(FrameDrawer drawer) {
+    public class NormalizeGrayFrameWorker extends AbstractOpenCVFrameWorker {
+        public NormalizeGrayFrameWorker(FrameDrawer drawer) {
             super(drawer);
         }
 
         protected void execute() {
-            Mat gray = gray();
+            out = gray();
 
-            Imgproc.adaptiveThreshold(gray, out, 255,
-                    Imgproc.THRESH_BINARY_INV, Imgproc.ADAPTIVE_THRESH_MEAN_C,
-                    blocksize, reduction);
+            Imgproc.equalizeHist(out, out);
+            Core.normalize(out, out, min, max, Core.NORM_MINMAX);
         }
 
     }

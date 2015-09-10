@@ -1,13 +1,13 @@
 apply plugin: 'com.android.library'
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
-
+    compileSdkVersion 19
+    buildToolsVersion '23.0.1'
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 8
+        versionCode 3000
+        versionName '3.0.0'
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -16,6 +16,8 @@ android {
     }
     lintOptions {
         abortOnError false
+    }
+    productFlavors {
     }
 }
 

@@ -1,5 +1,6 @@
 package org.hschott.camdroid;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,20 +10,16 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.MenuCompat;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.ActionBarActivity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import org.hschott.camdroid.processor.FrameProcessor;
-import org.hschott.camdroid.processor.FrameProcessors;
 import org.hschott.camdroid.util.StorageUtils;
 
 import java.io.File;
@@ -30,10 +27,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class CameraActivity extends ActionBarActivity {
+public class CameraActivity extends Activity {
     private CameraPreviewView mPreview;
     private ProcessFramesView mProcessorView;
-    private Fragment mConfigUIFragment;
 
     private SimpleDateFormat sdf = new SimpleDateFormat(
             "yyyy-MM-dd_HH-mm-ss-SS", Locale.US);
@@ -92,10 +88,53 @@ public class CameraActivity extends ActionBarActivity {
         this.mProcessorView = (ProcessFramesView) this
                 .findViewById(R.id.processor_view);
 
-        this.mProcessorView.setFrameProcessor(FrameProcessors.PassThrough
+        this.mProcessorView.setFrameProcessor(FrameProcessors.ColorSpace
                 .newFrameProcessor(this.mProcessorView));
-        this.getSupportActionBar().setSubtitle(
-                FrameProcessors.PassThrough.name());
+        this.getActionBar().setSubtitle(
+                FrameProcessors.ColorSpace.name());
+
+        final GestureDetector gesture = new GestureDetector(getApplicationContext(),
+                new GestureDetector.SimpleOnGestureListener() {
+
+                    @Override
+                    public boolean onDown(MotionEvent e) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                                           float velocityY) {
+                        final int SWIPE_MIN_DISTANCE = 120;
+                        final int SWIPE_MAX_OFF_PATH = 250;
+                        final int SWIPE_THRESHOLD_VELOCITY = 200;
+                        try {
+                            if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH) {
+                                return false;
+                            }
+                            if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
+                                    && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                                hideConfigurationUI();
+                                return true;
+                            }
+                            if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
+                                    && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                                showConfigurationUI();
+                                return true;
+                            }
+                        } catch (Exception e) {
+                            // nothing
+                        }
+                        return super.onFling(e1, e2, velocityX, velocityY);
+                    }
+                });
+
+        View configUi = this.findViewById(R.id.configcontainer);
+        configUi.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gesture.onTouchEvent(event);
+            }
+        });
 
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -120,26 +159,16 @@ public class CameraActivity extends ActionBarActivity {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         hideSystemUI();
-                        FrameProcessor frameProcessor = CameraActivity.this.mProcessorView
-                                .getFrameProcessor();
-
-                        if (frameProcessor != null) {
-                            CameraActivity.this.mConfigUIFragment = frameProcessor
-                                    .getConfigUiFragment();
-                            FragmentManager fm = CameraActivity.this
-                                    .getSupportFragmentManager();
-                            FragmentTransaction ft = fm.beginTransaction();
-                            ft.replace(R.id.configcontainer,
-                                    CameraActivity.this.mConfigUIFragment, null);
-                            ft.show(CameraActivity.this.mConfigUIFragment);
-                            ft.commit();
+                        if (hasConfigurationUI()) {
+                            hideConfigurationUI();
+                        } else {
+                            showConfigurationUI();
                         }
 
                         return true;
                     }
                 });
-        MenuItemCompat
-                .setShowAsAction(i1, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+        i1.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         MenuItem i2 = menu
                 .add(Menu.NONE, Menu.NONE, Menu.NONE, R.string.take_picture)
@@ -152,8 +181,7 @@ public class CameraActivity extends ActionBarActivity {
                         return true;
                     }
                 });
-        MenuItemCompat
-                .setShowAsAction(i2, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+        i2.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         for (final FrameProcessors f : FrameProcessors.values()) {
             menu.add(Menu.NONE, f.ordinal(), Menu.NONE, f.name())
@@ -161,16 +189,48 @@ public class CameraActivity extends ActionBarActivity {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             hideSystemUI();
-                            if (CameraActivity.this.mConfigUIFragment != null) {
-                                ((UIFragment) CameraActivity.this.mConfigUIFragment)
-                                        .remove();
+                            if (hasConfigurationUI()) {
+                                hideConfigurationUI();
                             }
                             CameraActivity.this.setFrameProcessor(f.ordinal());
+                            CameraActivity.this.showConfigurationUI();
                             return true;
                         }
                     });
         }
         return true;
+    }
+
+    protected boolean hasConfigurationUI() {
+        return getFragmentManager().findFragmentById(R.id.configcontainer) != null;
+    }
+
+    protected void showConfigurationUI() {
+        if (!hasConfigurationUI()) {
+            FrameProcessor frameProcessor = this.mProcessorView
+                    .getFrameProcessor();
+
+            if (frameProcessor != null) {
+                Fragment fragment = frameProcessor
+                        .getConfigUiFragment(getApplicationContext());
+
+                getFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.animator.slide_in_right, R.animator.slide_out_left)
+                        .add(R.id.configcontainer, fragment)
+                        .commit();
+            }
+        }
+    }
+
+    protected void hideConfigurationUI() {
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.configcontainer);
+
+        if (fragment != null) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.animator.slide_in_right, R.animator.slide_out_left)
+                    .remove(fragment).commit();
+        }
     }
 
     @Override
@@ -212,20 +272,20 @@ public class CameraActivity extends ActionBarActivity {
     }
 
     protected void setFrameProcessor(int ordinal) {
-        this.getSupportActionBar().setSubtitle(null);
+        this.getActionBar().setSubtitle(null);
         FrameProcessors t = FrameProcessors.values()[ordinal];
         this.mPreview.stopPreview();
         this.mProcessorView.setFrameProcessor(t
                 .newFrameProcessor(this.mProcessorView));
         this.mPreview.startPreview();
-        this.getSupportActionBar().setSubtitle(t.name());
+        this.getActionBar().setSubtitle(t.name());
     }
 
     public void takePicture() {
         Date date = new Date();
         final String formated = CameraActivity.this.sdf.format(date);
 
-        File file = new File(getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), formated + "_" + "PROCESSED" + ".jpg");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), formated + "_" + "PROCESSED" + ".jpg");
 
         this.mProcessorView.takePicture(file);
         StorageUtils.updateMedia(CameraActivity.this.getApplicationContext(),
@@ -235,7 +295,7 @@ public class CameraActivity extends ActionBarActivity {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
-                File file = new File(getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), formated + "_" + "CAPTURE" + ".jpg");
+                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), formated + "_" + "CAPTURE" + ".jpg");
                 StorageUtils.writeFile(file, data);
                 StorageUtils.updateMedia(
                         CameraActivity.this.getApplicationContext(), file);

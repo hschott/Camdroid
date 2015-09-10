@@ -5,8 +5,12 @@
     <string name="select">Press menu to select an image processor</string>
     <string name="take_picture">Take picture</string>
     <string name="configure_processor">Configure processor</string>
-    <string name="picture_saved">Saved in Camdroid Album</string>
+    <string name="picture_saved">Saved in Album</string>
     <string name="not_configurable">Not configurable</string>
+
+    <!-- normalize gray -->
+    <string name="min">Minimum</string>
+    <string name="max">Maximum</string>
 
     <!-- contour detection -->
     <string name="threshold">Threshold</string>
@@ -15,7 +19,6 @@
     <string name="sigma_x">Gaussian standard deviation</string>
     <string name="alpha">Weight of the first array</string>
     <string name="beta">Weight of the second array</string>
-    <string name="gamma">Added scalar</string>
 
     <!-- adaptive threshold -->
     <string name="blocksize">Blocksize</string>
@@ -30,5 +33,15 @@
     <string name="min_neighbors">Minimum neighbors</string>
     <string name="scale_factor">Scale factor</string>
     <string name="classifiers">Select Classifier</string>
+
+    <!-- color space -->
+    <string name="hsv">HSV</string>
+    <string name="hue">Hue</string>
+    <string name="saturation">Saturation</string>
+    <string name="value">Value</string>
+    <string name="rgb">RGB</string>
+    <string name="red">Red</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
 
 </resources>

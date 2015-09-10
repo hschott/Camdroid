@@ -1,5 +1,6 @@
 package org.hschott.camdroid.processor;
 
+import org.hschott.camdroid.FrameProcessor;
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 
 import java.util.concurrent.ExecutorService;

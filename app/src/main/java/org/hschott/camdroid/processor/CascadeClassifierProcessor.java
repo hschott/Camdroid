@@ -1,7 +1,8 @@
 package org.hschott.camdroid.processor;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +13,9 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 
+import org.hschott.camdroid.ConfigurationFragment;
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.hschott.camdroid.R;
-import org.hschott.camdroid.UIFragment;
 import org.opencv.android.Utils;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
@@ -31,11 +32,7 @@ import java.util.Map.Entry;
 public class CascadeClassifierProcessor extends AbstractOpenCVFrameProcessor {
 
     public static class CascadeClassifierUIFragment extends
-            ConfigurationFragment implements UIFragment {
-        public static CascadeClassifierUIFragment newInstance() {
-            CascadeClassifierUIFragment f = new CascadeClassifierUIFragment();
-            return f;
-        }
+            ConfigurationFragment {
 
         private SeekBar objectMaxSizeSeekBar;
 
@@ -195,6 +192,8 @@ public class CascadeClassifierProcessor extends AbstractOpenCVFrameProcessor {
 
     static {
         classifiersId
+                .put("Car", R.raw.haarcascade_cars);
+        classifiersId
                 .put("Frontal face", R.raw.haarcascade_frontalface_default);
         classifiersId.put("Profile face", R.raw.haarcascade_profileface);
 
@@ -230,8 +229,8 @@ public class CascadeClassifierProcessor extends AbstractOpenCVFrameProcessor {
     }
 
     @Override
-    public Fragment getConfigUiFragment() {
-        return CascadeClassifierUIFragment.newInstance();
+    public Fragment getConfigUiFragment(Context context) {
+        return Fragment.instantiate(context, CascadeClassifierUIFragment.class.getName());
     }
 
     @Override

@@ -5,10 +5,13 @@ import android.graphics.Bitmap;
 import org.hschott.camdroid.OnCameraPreviewListener;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
@@ -17,6 +20,7 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
     protected Mat in;
     protected Mat out;
     private Mat rgb;
+    private Mat hsv;
     protected OnCameraPreviewListener.FrameDrawer drawer;
     private Bitmap bmp;
     protected int width = 0;
@@ -39,7 +43,8 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
                 CvType.CV_8UC1);
         this.out = new Mat(this.height + (this.height / 2), this.width,
                 CvType.CV_8UC1);
-        this.rgb = new Mat(this.height, this.width, CvType.CV_8UC4);
+        this.rgb = new Mat(this.height, this.width, CvType.CV_8UC3);
+        this.hsv = new Mat(this.height, this.width, CvType.CV_8UC3);
         this.bmp = Bitmap.createBitmap(this.width, this.height,
                 Bitmap.Config.ARGB_8888);
     }
@@ -79,6 +84,9 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
             }
             if (this.rgb != null) {
                 this.rgb.release();
+            }
+           if (this.hsv != null) {
+                this.hsv.release();
             }
             if (this.bmp != null) {
                 this.bmp.recycle();
@@ -120,11 +128,22 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
     protected abstract void execute();
 
     protected Mat rgb() {
-        Imgproc.cvtColor(this.in, this.rgb, Imgproc.COLOR_YUV420sp2RGBA);
-        return this.rgb;
+        Imgproc.cvtColor(this.in, this.rgb, Imgproc.COLOR_YUV420sp2RGB);
+        return rgb;
     }
 
     protected Mat gray() {
         return this.in.submat(0, this.height, 0, this.width);
+    }
+
+    protected Mat hsv() {
+        Imgproc.cvtColor(rgb(), hsv, Imgproc.COLOR_RGB2HSV);
+        return hsv;
+    }
+
+    protected Mat split(Mat mat, int c) {
+        List<Mat> channels = new ArrayList<Mat>();
+        Core.split(mat, channels);
+        return channels.get(c);
     }
 }

@@ -10,10 +10,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:text="@string/blocksize"/>
+        android:text="@string/min"/>
 
     <SeekBar
-        android:id="@+id/blocksize"
+        android:id="@+id/min"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
@@ -24,10 +24,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:text="@string/reduction"/>
+        android:text="@string/max"/>
 
     <SeekBar
-        android:id="@+id/reduction"
+        android:id="@+id/max"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"

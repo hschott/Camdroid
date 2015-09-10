@@ -1,16 +1,17 @@
 package org.hschott.camdroid.processor;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+import org.hschott.camdroid.ConfigurationFragment;
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.hschott.camdroid.R;
-import org.hschott.camdroid.UIFragment;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
@@ -25,12 +26,7 @@ import java.util.Iterator;
 public class MovementDetectionProcessor extends AbstractOpenCVFrameProcessor {
 
     public static class BackgroundSubstractionUIFragment extends
-            ConfigurationFragment implements UIFragment {
-
-        public static BackgroundSubstractionUIFragment newInstance() {
-            BackgroundSubstractionUIFragment f = new BackgroundSubstractionUIFragment();
-            return f;
-        }
+            ConfigurationFragment {
 
         private SeekBar objectMaxSizeSeekBar;
 
@@ -149,8 +145,8 @@ public class MovementDetectionProcessor extends AbstractOpenCVFrameProcessor {
     }
 
     @Override
-    public Fragment getConfigUiFragment() {
-        return BackgroundSubstractionUIFragment.newInstance();
+    public Fragment getConfigUiFragment(Context context) {
+        return Fragment.instantiate(context, BackgroundSubstractionUIFragment.class.getName());
     }
 
     @Override

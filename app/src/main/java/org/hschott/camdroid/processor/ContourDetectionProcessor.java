@@ -1,16 +1,17 @@
 package org.hschott.camdroid.processor;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+import org.hschott.camdroid.ConfigurationFragment;
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.hschott.camdroid.R;
-import org.hschott.camdroid.UIFragment;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -21,74 +22,70 @@ import java.util.ArrayList;
 
 public class ContourDetectionProcessor extends AbstractOpenCVFrameProcessor {
 
-	public static class ContourDetectionUIFragment extends
-			ConfigurationFragment implements UIFragment {
-		public static ContourDetectionUIFragment newInstance() {
-			ContourDetectionUIFragment f = new ContourDetectionUIFragment();
-			return f;
-		}
+    public static class ContourDetectionUIFragment extends
+            ConfigurationFragment {
 
-		@Override
-		public int getLayoutId() {
-			return R.layout.contourdetection_ui;
-		}
+        @Override
+        public int getLayoutId() {
+            return R.layout.contourdetection_ui;
+        }
 
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View v = super
-					.onCreateView(inflater, container, savedInstanceState);
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View v = super
+                    .onCreateView(inflater, container, savedInstanceState);
 
-			SeekBar minSeekBar = (SeekBar) v.findViewById(R.id.threshold);
-			minSeekBar.setMax(255);
-			minSeekBar.setProgress(threshold);
+            SeekBar minSeekBar = (SeekBar) v.findViewById(R.id.threshold);
+            minSeekBar.setMax(255);
+            minSeekBar.setProgress(threshold);
 
-			minSeekBar
-					.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-						@Override
-						public void onProgressChanged(SeekBar seekBar,
-								int progress, boolean fromUser) {
-							if (fromUser) {
-								threshold = progress;
-								ContourDetectionUIFragment.this
-										.showValue(threshold);
-							}
-						}
+            minSeekBar
+                    .setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar,
+                                                      int progress, boolean fromUser) {
+                            if (fromUser) {
+                                threshold = progress;
+                                ContourDetectionUIFragment.this
+                                        .showValue(threshold);
+                            }
+                        }
 
-						@Override
-						public void onStartTrackingTouch(SeekBar seekBar) {
-						}
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+                        }
 
-						@Override
-						public void onStopTrackingTouch(SeekBar seekBar) {
-						}
-					});
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+                        }
+                    });
 
-			return v;
+            return v;
 
-		}
-	}
+        }
+    }
 
-	private static int threshold = 50;
+    private static int threshold = 96;
 
-	public ContourDetectionProcessor(FrameDrawer drawer) {
-		super(drawer);
-	}
+    public ContourDetectionProcessor(FrameDrawer drawer) {
+        super(drawer);
+    }
 
-	@Override
-	public void allocate(int width, int height) {
-		super.allocate(width, height);
-	}
+    @Override
+    public void allocate(int width, int height) {
+        super.allocate(width, height);
+    }
 
-	@Override
-	public Fragment getConfigUiFragment() {
-		return ContourDetectionUIFragment.newInstance();
-	}
+    @Override
+    public Fragment getConfigUiFragment(Context context) {
+        return Fragment.instantiate(context, ContourDetectionUIFragment.class.getName());
+    }
 
-	@Override
-	public void release() {
-		super.release();
-	}
+    @Override
+    public void release() {
+        super.release();
+    }
 
     @Override
     public FrameWorker createFrameWorker() {
