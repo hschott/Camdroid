@@ -195,20 +195,8 @@ public class CascadeClassifierProcessor extends AbstractOpenCVFrameProcessor {
                 .put("Car", R.raw.haarcascade_cars);
         classifiersId
                 .put("Frontal face", R.raw.haarcascade_frontalface_default);
-        classifiersId.put("Profile face", R.raw.haarcascade_profileface);
-
         classifiersId.put("Eye", R.raw.haarcascade_eye);
-        classifiersId.put("Eye w/ eyeglasses",
-                R.raw.haarcascade_eye_tree_eyeglasses);
-        classifiersId.put("Left eye", R.raw.haarcascade_lefteye_2splits);
-
-        classifiersId.put("Mouth", R.raw.haarcascade_mcs_mouth);
-        classifiersId.put("Nose", R.raw.haarcascade_mcs_nose);
-        classifiersId.put("Left ear", R.raw.haarcascade_mcs_leftear);
-
         classifiersId.put("Full body", R.raw.haarcascade_fullbody);
-        classifiersId.put("Upper body", R.raw.haarcascade_upperbody);
-        classifiersId.put("Lower body", R.raw.haarcascade_lowerbody);
     }
 
     private static String classifierPath;
