@@ -2,6 +2,7 @@ package org.hschott.camdroid;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.PictureCallback;
@@ -36,9 +37,10 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
     private Camera mCamera;
     private AutoFocusManager mAutoFocusManager;
 
-    private List<OnCameraPreviewListener> mCameraFrameListeners = new ArrayList<OnCameraPreviewListener>();
+    private List<OnCameraPreviewListener> onCameraPreviewListeners = new ArrayList<OnCameraPreviewListener>();
 
     private Size mPreviewSize;
+    private byte[] mBuffer;
     private int mPreviewFormat;
 
     private boolean previewRunning = false;
@@ -78,7 +80,7 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
             AutoFocusManagerAware target = (AutoFocusManagerAware) cameraFrameListener;
             target.setAutoFocusManager(this.mAutoFocusManager);
         }
-        this.mCameraFrameListeners.add(cameraFrameListener);
+        this.onCameraPreviewListeners.add(cameraFrameListener);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -176,8 +178,9 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        for (OnCameraPreviewListener cameraFrameListener : this.mCameraFrameListeners) {
-            cameraFrameListener.onCameraPreviewFrame(data, this.mPreviewFormat);
+        for (OnCameraPreviewListener onCameraPreviewListener : this.onCameraPreviewListeners) {
+            onCameraPreviewListener.onCameraPreviewFrame(data, this.mPreviewFormat);
+            mCamera.addCallbackBuffer(mBuffer);
         }
     }
 
@@ -199,8 +202,8 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
     }
 
     public void removeCameraFrameListener(
-            OnCameraPreviewListener cameraFrameListener) {
-        this.mCameraFrameListeners.remove(cameraFrameListener);
+            OnCameraPreviewListener onCameraPreviewListener) {
+        this.onCameraPreviewListeners.remove(onCameraPreviewListener);
     }
 
     public void startPreview() {
@@ -208,13 +211,14 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
                 + ", configured=" + this.configured);
         if (this.mCamera != null && !this.previewRunning && this.configured) {
             this.previewRunning = true;
-            mCamera.setPreviewCallback(this);
+            mCamera.addCallbackBuffer(mBuffer);
+            mCamera.setPreviewCallbackWithBuffer(this);
             this.mCamera.startPreview();
             if (this.mAutoFocusManager != null) {
                 this.mAutoFocusManager.resume();
             }
-            for (OnCameraPreviewListener cameraFrameListener : this.mCameraFrameListeners) {
-                cameraFrameListener.onCameraPreviewStarted(this.mCamera);
+            for (OnCameraPreviewListener onCameraPreviewListener : this.onCameraPreviewListeners) {
+                onCameraPreviewListener.onCameraPreviewStarted(this.mCamera);
             }
             Log.d(TAG, "camera preview started");
         }
@@ -228,8 +232,8 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
             }
             this.mCamera.setPreviewCallback(null);
             this.mCamera.stopPreview();
-            for (OnCameraPreviewListener cameraFrameListener : this.mCameraFrameListeners) {
-                cameraFrameListener.onCameraPreviewStopped();
+            for (OnCameraPreviewListener onCameraPreviewListener : this.onCameraPreviewListeners) {
+                onCameraPreviewListener.onCameraPreviewStopped();
             }
             this.previewRunning = false;
             Log.d(TAG, "camera preview stopped");
@@ -251,6 +255,11 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
             parameters = this.mCamera.getParameters();
             this.mPreviewFormat = parameters.getPreviewFormat();
             this.mPreviewSize = parameters.getPreviewSize();
+
+
+            int size = mPreviewSize.height * mPreviewSize.width * ImageFormat.getBitsPerPixel(mPreviewFormat) / 8;
+            mBuffer = new byte[size];
+
             try {
                 this.mCamera.setPreviewDisplay(holder);
                 this.configured = true;
