@@ -83,7 +83,6 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
         this.onCameraPreviewListeners.add(cameraFrameListener);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void createCamera() {
         Log.d(TAG, "createCamera()");
         // Open the default i.e. the first rear facing camera.
@@ -102,11 +101,9 @@ public class CameraPreviewView extends ViewGroup implements PreviewCallback,
 
         boolean canDisableSystemShutterSound = false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            if (cameraInfo.canDisableShutterSound) {
-                canDisableSystemShutterSound = this.mCamera
-                        .enableShutterSound(false);
-            }
+        if (cameraInfo.canDisableShutterSound) {
+            canDisableSystemShutterSound = this.mCamera
+                    .enableShutterSound(false);
         }
 
         this.mAutoFocusManager = new AutoFocusManager(this.getContext()

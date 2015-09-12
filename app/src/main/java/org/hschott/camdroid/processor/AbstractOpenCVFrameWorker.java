@@ -41,10 +41,9 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
         this.height = height;
         this.in = new Mat(this.height + (this.height / 2), this.width,
                 CvType.CV_8UC1);
-        this.out = new Mat(this.height + (this.height / 2), this.width,
-                CvType.CV_8UC1);
-        this.rgb = new Mat(this.height, this.width, CvType.CV_8UC3);
-        this.hsv = new Mat(this.height, this.width, CvType.CV_8UC3);
+        this.out = new Mat();
+        this.rgb = new Mat();//new Mat(this.height, this.width, CvType.CV_8UC3);
+        this.hsv = new Mat();//new Mat(this.height, this.width, CvType.CV_8UC3);
         this.bmp = Bitmap.createBitmap(this.width, this.height,
                 Bitmap.Config.ARGB_8888);
     }

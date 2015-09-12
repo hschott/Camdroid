@@ -2,15 +2,15 @@ package org.hschott.camdroid;
 
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.hschott.camdroid.processor.AdaptiveThresholdProcessor;
+import org.hschott.camdroid.processor.CannyEdgesProcessor;
 import org.hschott.camdroid.processor.CascadeClassifierProcessor;
-import org.hschott.camdroid.processor.ContourDetectionProcessor;
 import org.hschott.camdroid.processor.NormalizeGrayProcessor;
 import org.hschott.camdroid.processor.MovementDetectionProcessor;
 import org.hschott.camdroid.processor.ColorSpaceProcessor;
 import org.hschott.camdroid.processor.UnsharpenMaskProcessor;
 
 public enum FrameProcessors {
-    ColorSpace, NormalizeGray, AdaptiveThreshold, ContourDetection, UnsharpenMask, MovementDetection, CascadeClassifier;
+    ColorSpace, NormalizeGray, AdaptiveThreshold, CannyEdges, UnsharpenMask, MovementDetection, CascadeClassifier;
 
     public FrameProcessor newFrameProcessor(FrameDrawer drawer) {
         switch (this.ordinal()) {
@@ -24,7 +24,7 @@ public enum FrameProcessors {
                 return new AdaptiveThresholdProcessor(drawer);
 
             case 3:
-                return new ContourDetectionProcessor(drawer);
+                return new CannyEdgesProcessor(drawer);
 
             case 4:
                 return new UnsharpenMaskProcessor(drawer);

@@ -9,10 +9,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.util.Log;
 
-import org.hschott.camdroid.util.Utils;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -105,15 +102,17 @@ public final class AutoFocusManager implements Camera.AutoFocusCallback,
                 .equals(focusMode)
                 || Camera.Parameters.FOCUS_MODE_MACRO.equals(focusMode);
 
-        List<Integer> resId = new ArrayList<Integer>();
+        int[] soundRes = new int[0];
         if (this.must_call_auto_focus) {
-            resId.add(R.raw.beep);
+            soundRes = Arrays.copyOf(soundRes, soundRes.length + 1);
+            soundRes[soundRes.length - 1] = R.raw.beep;
         }
         if (canDisableSystemShutterSound) {
-            resId.add(R.raw.shutter);
+            soundRes = Arrays.copyOf(soundRes, soundRes.length + 1);
+            soundRes[soundRes.length - 1] = R.raw.shutter;
         }
 
-        this.soundManager = new SoundManager(context, Utils.toIntArray(resId));
+        this.soundManager = new SoundManager(context, soundRes);
 
         if (canDisableSystemShutterSound) {
             this.shutterCallback = new ShutterCallback() {
