@@ -1,2 +1,6 @@
 language: android
 script: ./gradlew build
+android:
+  components:
+    - build-tools-23.0.1
+    - android-19
