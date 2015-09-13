@@ -1,3 +1,5 @@
+[![Travis Build Status](https://travis-ci.org/hschott/Camdroid.svg?branch=master)](https://travis-ci.org/hschott/Camdroid) 
+
 Camdroid
 ========
 
