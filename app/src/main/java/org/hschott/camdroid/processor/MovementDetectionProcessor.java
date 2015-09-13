@@ -14,8 +14,10 @@ import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
 import org.hschott.camdroid.R;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.video.BackgroundSubtractorMOG2;
 import org.opencv.video.Video;
@@ -137,7 +139,7 @@ public class MovementDetectionProcessor extends AbstractOpenCVFrameProcessor {
 
     private static int object_min_size = 25;
     private static int object_max_size = 50;
-    private static int learning_rate = 10;
+    private static int learning_rate = 11;
     private BackgroundSubtractorMOG2 mog = Video.createBackgroundSubtractorMOG2(50, 0, true);
 
     public MovementDetectionProcessor(FrameDrawer drawer) {
@@ -177,11 +179,15 @@ public class MovementDetectionProcessor extends AbstractOpenCVFrameProcessor {
         protected void execute() {
             out = gray();
 
+            Imgproc.equalizeHist(out, out);
+
             synchronized (mog) {
-                mog.apply(out, this.mask, (double) (-10 + learning_rate) / 1000);
+                mog.apply(out, this.mask, (double) (-10 + learning_rate) / 10);
             }
 
-            Imgproc.dilate(this.mask, this.mask, new Mat());
+            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_DILATE,
+                    new Size(3, 3));
+            Imgproc.dilate(mask, mask, kernel);
 
             ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
             Imgproc.findContours(this.mask, contours, new Mat(),
@@ -201,7 +207,6 @@ public class MovementDetectionProcessor extends AbstractOpenCVFrameProcessor {
                 }
             }
         }
-
     }
 
 }

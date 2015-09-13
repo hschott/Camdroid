@@ -1,2 +1,3 @@
 include ':app'
 include ':openCVLibrary300'
+include ':tesseractLibrary30202'

@@ -8,12 +8,14 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import org.hschott.camdroid.OnCameraPreviewListener.AutoFocusManagerAware;
 import org.hschott.camdroid.OnCameraPreviewListener.FrameDrawer;
@@ -55,6 +57,11 @@ public class ProcessFramesView extends ViewGroup implements
     public ProcessFramesView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.initView(context);
+    }
+
+    @Override
+    public DisplayMetrics getDisplayMetrics() {
+        return getResources().getDisplayMetrics();
     }
 
     @Override

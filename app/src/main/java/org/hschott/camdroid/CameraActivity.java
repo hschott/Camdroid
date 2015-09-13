@@ -147,6 +147,12 @@ public class CameraActivity extends Activity {
 
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(systemUiVisibilityChangeListener);
 
+        final int[] TESSERACT_LANG_FROM_ID = {R.raw.eng};
+        final String[] TESSERACT_LANG_TO_PATH = {"eng.traineddata"};
+
+        StorageUtils.exportRaw(getApplicationContext(), new File(Environment.getExternalStorageDirectory(), "tessdata"),
+                TESSERACT_LANG_FROM_ID, TESSERACT_LANG_TO_PATH);
+
     }
 
     @Override

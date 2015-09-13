@@ -7,10 +7,11 @@ import org.hschott.camdroid.processor.CascadeClassifierProcessor;
 import org.hschott.camdroid.processor.NormalizeGrayProcessor;
 import org.hschott.camdroid.processor.MovementDetectionProcessor;
 import org.hschott.camdroid.processor.ColorSpaceProcessor;
+import org.hschott.camdroid.processor.OCRProcessor;
 import org.hschott.camdroid.processor.UnsharpenMaskProcessor;
 
 public enum FrameProcessors {
-    ColorSpace, NormalizeGray, AdaptiveThreshold, CannyEdges, UnsharpenMask, MovementDetection, CascadeClassifier;
+    ColorSpace, NormalizeGray, AdaptiveThreshold, CannyEdges, UnsharpenMask, MovementDetection, CascadeClassifier, OCR;
 
     public FrameProcessor newFrameProcessor(FrameDrawer drawer) {
         switch (this.ordinal()) {
@@ -34,6 +35,9 @@ public enum FrameProcessors {
 
             case 6:
                 return new CascadeClassifierProcessor(drawer);
+
+            case 7:
+                return new OCRProcessor(drawer);
 
             default:
                 return new ColorSpaceProcessor(drawer);

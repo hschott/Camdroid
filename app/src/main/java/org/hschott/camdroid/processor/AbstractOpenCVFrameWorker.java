@@ -22,7 +22,7 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
     private Mat rgb;
     private Mat hsv;
     protected OnCameraPreviewListener.FrameDrawer drawer;
-    private Bitmap bmp;
+    protected Bitmap bmp;
     protected int width = 0;
     protected int height = 0;
     private boolean processed = true;
@@ -84,7 +84,7 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
             if (this.rgb != null) {
                 this.rgb.release();
             }
-           if (this.hsv != null) {
+            if (this.hsv != null) {
                 this.hsv.release();
             }
             if (this.bmp != null) {
@@ -113,15 +113,18 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
             if (!processed) {
                 execute();
 
-                Utils.matToBitmap(out, this.bmp);
-                this.drawer.drawBitmap(this.bmp);
+                draw();
 
                 processed = true;
             }
-        } catch (Exception e) {
         } finally {
             this.lock.unlock();
         }
+    }
+
+    protected void draw() {
+        Utils.matToBitmap(out, this.bmp);
+        this.drawer.drawBitmap(this.bmp);
     }
 
     protected abstract void execute();
