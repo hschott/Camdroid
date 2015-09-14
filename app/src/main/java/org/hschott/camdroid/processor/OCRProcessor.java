@@ -191,7 +191,7 @@ public class OCRProcessor extends AbstractOpenCVFrameProcessor {
 
     public static class OCRFrameWorker extends AbstractOpenCVFrameWorker {
 
-        private static final int SIMPLETEXT_MIN_SCORE = 70;
+        private static final int SIMPLETEXT_MIN_SCORE = 60;
 
         private TessBaseAPI tessBaseAPI;
 
