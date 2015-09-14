@@ -19,3 +19,6 @@ Several OpenCV processing examples with configuration interface:
 * Movement detection using background subtraction
 * Haar cascade classifiers
 * OCR (experimental)
+
+![ColorSpace HSV](https://cloud.githubusercontent.com/assets/4548589/9845973/5f008e88-5acf-11e5-9894-85809b351f39.png)
+![CannyEdge](https://cloud.githubusercontent.com/assets/4548589/9845975/62fb9c58-5acf-11e5-8859-bcc1a6c14cee.png)
