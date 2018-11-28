@@ -21,6 +21,7 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
     protected Mat out;
     private Mat rgb;
     private Mat hsv;
+    private Mat split;
     protected OnCameraPreviewListener.FrameDrawer drawer;
     protected Bitmap bmp;
     protected int width = 0;
@@ -42,8 +43,9 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
         this.in = new Mat(this.height + (this.height / 2), this.width,
                 CvType.CV_8UC1);
         this.out = new Mat();
-        this.rgb = new Mat();//new Mat(this.height, this.width, CvType.CV_8UC3);
-        this.hsv = new Mat();//new Mat(this.height, this.width, CvType.CV_8UC3);
+        this.rgb = new Mat();
+        this.hsv = new Mat();
+        this.split = new Mat();
         this.bmp = Bitmap.createBitmap(this.width, this.height,
                 Bitmap.Config.ARGB_8888);
     }
@@ -86,6 +88,9 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
             }
             if (this.hsv != null) {
                 this.hsv.release();
+            }
+            if (this.split != null) {
+                this.split.release();
             }
             if (this.bmp != null) {
                 this.bmp.recycle();
@@ -144,8 +149,7 @@ public abstract class AbstractOpenCVFrameWorker implements FrameWorker {
     }
 
     protected Mat split(Mat mat, int c) {
-        List<Mat> channels = new ArrayList<Mat>();
-        Core.split(mat, channels);
-        return channels.get(c);
+        Core.extractChannel(mat, this.split, c);
+        return this.split;
     }
 }
